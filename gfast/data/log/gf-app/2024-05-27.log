@@ -1,0 +1,96 @@
+2024-05-27 18:12:42.230 [INFO] [GToken][params:{"AuthExcludePaths":"[\"/login\"]","AuthFailMsg":"登录超时，请重新登录","AuthPaths":"","CacheKey":"GToken:","CacheMode":1,"EncryptKey":"koi29a83idakguqjq29asd9asd8a7jhq","LoginPath":"/login","LogoutPath":"/logout","MiddlewareType":1,"MultiLogin":true,"Timeout":10800000,"TokenDelimiter":"_"}]start...  
+2024-05-27 18:28:14.154 [INFO] [GToken][params:{"AuthExcludePaths":"[\"/login\"]","AuthFailMsg":"登录超时，请重新登录","AuthPaths":"","CacheKey":"GToken:","CacheMode":1,"EncryptKey":"koi29a83idakguqjq29asd9asd8a7jhq","LoginPath":"/login","LogoutPath":"/logout","MiddlewareType":1,"MultiLogin":true,"Timeout":10800000,"TokenDelimiter":"_"}]start...  
+2024-05-27 18:29:30.577 [ERRO] Error 1054: Unknown column 'JobId' in 'field list', SELECT `JobId`,`JobName`,`JobParams`,`JobGroup`,`InvokeTarget`,`CronExpression`,`MisfirePolicy`,`Concurrent`,`Status`,`CreateBy`,`UpdateBy`,`Remark`,`CreatedAt`,`UpdatedAt`,`DeletedAt` FROM `sys_job` WHERE (`status`=0) AND `deleted_at` IS NULL
+Stack:
+1.  gfast/task.init.0
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/task/bind_function.go:37
+ 
+2024-05-27 18:31:24.428 [INFO] [GToken][params:{"AuthExcludePaths":"[\"/login\"]","AuthFailMsg":"登录超时，请重新登录","AuthPaths":"","CacheKey":"GToken:","CacheMode":1,"EncryptKey":"koi29a83idakguqjq29asd9asd8a7jhq","LoginPath":"/login","LogoutPath":"/logout","MiddlewareType":1,"MultiLogin":true,"Timeout":10800000,"TokenDelimiter":"_"}]start...  
+2024-05-27 18:31:58 [ERRO] /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/dao/sys_user.go:37: Error 1146: Table 'bridge.sys_user' doesn't exist, SELECT `Id`,`UserName`,`UserNickname`,`UserPassword`,`Googleauth`,`UserSalt`,`UserStatus`,`IsAdmin`,`Avatar`,`DeptId` FROM `sys_user` WHERE `user_name`='admin' LIMIT 1
+Stack:
+1.  gfast/app/system/dao.(*sysUserDao).FindByUsername
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/dao/sys_user.go:37
+2.  gfast/app/system/service.(*sysUser).GetUserByUsername
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/service/sys_user.go:89
+3.  gfast/app/system/service.(*sysUser).GetUserByUsernamePassword
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/service/sys_user.go:69
+4.  gfast/app/system/service.(*sysUser).GetAdminUserByUsernamePassword
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/service/sys_user.go:56
+5.  gfast/app/system/api.(*auth).login
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/api/auth.go:68
+6.  github.com/goflyfox/gtoken/gtoken.(*GfToken).Login
+    /Users/0xhayden/dev/pkg/mod/github.com/tiger1103/gtoken@v1.4.8/gtoken/gtoken.go:273
+7.  github.com/goflyfox/gtoken/gtoken.(*GfToken).authMiddleware
+    /Users/0xhayden/dev/pkg/mod/github.com/tiger1103/gtoken@v1.4.8/gtoken/gtoken.go:314
+8.  gfast/middleware.CORS
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/middleware/cors.go:15
+ 
+2024-05-27 18:32:11 [ERRO] /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/dao/sys_user.go:37: Error 1146: Table 'bridge.sys_user' doesn't exist, SELECT `Id`,`UserName`,`UserNickname`,`UserPassword`,`Googleauth`,`UserSalt`,`UserStatus`,`IsAdmin`,`Avatar`,`DeptId` FROM `sys_user` WHERE `user_name`='admin' LIMIT 1
+Stack:
+1.  gfast/app/system/dao.(*sysUserDao).FindByUsername
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/dao/sys_user.go:37
+2.  gfast/app/system/service.(*sysUser).GetUserByUsername
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/service/sys_user.go:89
+3.  gfast/app/system/service.(*sysUser).GetUserByUsernamePassword
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/service/sys_user.go:69
+4.  gfast/app/system/service.(*sysUser).GetAdminUserByUsernamePassword
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/service/sys_user.go:56
+5.  gfast/app/system/api.(*auth).login
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/api/auth.go:68
+6.  github.com/goflyfox/gtoken/gtoken.(*GfToken).Login
+    /Users/0xhayden/dev/pkg/mod/github.com/tiger1103/gtoken@v1.4.8/gtoken/gtoken.go:273
+7.  github.com/goflyfox/gtoken/gtoken.(*GfToken).authMiddleware
+    /Users/0xhayden/dev/pkg/mod/github.com/tiger1103/gtoken@v1.4.8/gtoken/gtoken.go:314
+8.  gfast/middleware.CORS
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/middleware/cors.go:15
+ 
+2024-05-27 18:41:20 [ERRO] /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/service/sys_user_online.go:61: Error 1146: Table 'bridge.sys_user_online' doesn't exist, SELECT COUNT(1) FROM `sys_user_online`
+Stack:
+1.  gfast/app/system/service.(*online).GetOnlineListPage
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/service/sys_user_online.go:61
+2.  gfast/app/system/api.(*auth).CheckUserOnline
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/api/auth.go:174
+ 
+2024-05-27 18:41:20 [ERRO] /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/api/auth.go:176: 获取总行数失败 
+Stack:
+1.  gfast/app/system/api.(*auth).CheckUserOnline
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/api/auth.go:176
+ 
+2024-05-27 18:41:43.560 [INFO] [GToken][params:{"AuthExcludePaths":"[\"/login\"]","AuthFailMsg":"登录超时，请重新登录","AuthPaths":"","CacheKey":"GToken:","CacheMode":1,"EncryptKey":"koi29a83idakguqjq29asd9asd8a7jhq","LoginPath":"/login","LogoutPath":"/logout","MiddlewareType":1,"MultiLogin":true,"Timeout":10800000,"TokenDelimiter":"_"}]start...  
+2024-05-27 18:55:49.092 [INFO] [GToken][params:{"AuthExcludePaths":"[\"/login\"]","AuthFailMsg":"登录超时，请重新登录","AuthPaths":"","CacheKey":"GToken:","CacheMode":1,"EncryptKey":"koi29a83idakguqjq29asd9asd8a7jhq","LoginPath":"/login","LogoutPath":"/logout","MiddlewareType":1,"MultiLogin":true,"Timeout":10800000,"TokenDelimiter":"_"}]start...  
+2024-05-27 19:01:20 [ERRO] /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/service/sys_user_online.go:61: dial tcp 16.162.106.158:3306: connect: operation timed out, SELECT COUNT(1) FROM `sys_user_online`
+Stack:
+1.  gfast/app/system/service.(*online).GetOnlineListPage
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/service/sys_user_online.go:61
+2.  gfast/app/system/api.(*auth).CheckUserOnline
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/api/auth.go:174
+ 
+2024-05-27 19:01:20 [ERRO] /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/api/auth.go:176: 获取总行数失败 
+Stack:
+1.  gfast/app/system/api.(*auth).CheckUserOnline
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/api/auth.go:176
+ 
+2024-05-27 19:11:20 [ERRO] /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/service/sys_user_online.go:61: dial tcp 16.162.106.158:3306: connect: operation timed out, SELECT COUNT(1) FROM `sys_user_online`
+Stack:
+1.  gfast/app/system/service.(*online).GetOnlineListPage
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/service/sys_user_online.go:61
+2.  gfast/app/system/api.(*auth).CheckUserOnline
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/api/auth.go:174
+ 
+2024-05-27 19:11:20 [ERRO] /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/api/auth.go:176: 获取总行数失败 
+Stack:
+1.  gfast/app/system/api.(*auth).CheckUserOnline
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/api/auth.go:176
+ 
+2024-05-27 19:21:20 [ERRO] /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/service/sys_user_online.go:61: dial tcp 16.162.106.158:3306: connect: operation timed out, SELECT COUNT(1) FROM `sys_user_online`
+Stack:
+1.  gfast/app/system/service.(*online).GetOnlineListPage
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/service/sys_user_online.go:61
+2.  gfast/app/system/api.(*auth).CheckUserOnline
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/api/auth.go:174
+ 
+2024-05-27 19:21:20 [ERRO] /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/api/auth.go:176: 获取总行数失败 
+Stack:
+1.  gfast/app/system/api.(*auth).CheckUserOnline
+    /Users/0xhayden/dev/src/KAD/Bridge/cms/gfast/app/system/api/auth.go:176
+ 
