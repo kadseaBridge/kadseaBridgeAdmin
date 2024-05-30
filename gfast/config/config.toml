@@ -32,7 +32,7 @@
 
 # Database.
 [database]
-    link  = 'mysql:root:123456@tcp(ec2-16-162-106-158.ap-east-1.compute.amazonaws.com:3306)/bridge'
+    link  = 'mysql:bridge:!WxY2P!Y^nVff#C@tcp(ec2-16-162-106-158.ap-east-1.compute.amazonaws.com:7006)/bridgedb'
     #link  = "mysql:root:123456@tcp(18.162.115.16:7001)/med"
     charset   = "utf8mb4" #数据库编码
     debug = true
@@ -49,7 +49,8 @@
 # Redis数据库配置
 [redis]
     open = true #是否开启 redis 缓存 若不开启使用gchache缓存方式
-    default = "ec2-16-162-106-158.ap-east-1.compute.amazonaws.com:6379,1,?idleTimeout=20&maxActive=100"
+    default = "ec2-16-162-106-158.ap-east-1.compute.amazonaws.com:7079,1,k3gPEFaKCEx8lmlI?idleTimeout=20&maxActive=100"
+
 
 #jwt配置
 [gToken]
@@ -79,7 +80,7 @@
     autoRemovePre = true   #是否自动删除表前缀
     tablePrefix   = "table_,qxkj_"   #表前缀
     templatePath  = "./template/vm"  #代码生成模板路径
-    frontDir = "/Users/0xhayden/dev/src/KAD/Bridge/cms/gfast-ui" #前端路径
+    frontDir = "E:/gowork/Walkie-Talkie/cms/gfast-ui" #前端路径
 
 # 上传配置
 [upload]
