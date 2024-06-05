@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" label-width="68px">    
+    <el-form :model="queryParams" ref="queryForm" :inline="true" label-width="68px">
       <el-form-item label="代币简称" prop="symbol">
         <el-input
             v-model="queryParams.symbol"
@@ -9,9 +9,9 @@
             size="small"
             @keyup.enter.native="handleQuery"
         />
-      </el-form-item>    
-        <el-form-item label="链Id" prop="chainId">
-          <el-select v-model="queryParams.chainId" placeholder="请选择链Id" clearable size="small">
+      </el-form-item>
+        <el-form-item label="链" prop="chainId">
+          <el-select v-model="queryParams.chainId" placeholder="请选择链" clearable size="small">
               <el-option
                   v-for="item in chainIdOptions"
                   :key="item.key"
@@ -19,7 +19,7 @@
                   :value="item.key"
               />
           </el-select>
-        </el-form-item>    
+        </el-form-item>
       <el-form-item label="代币地址" prop="address">
         <el-input
             v-model="queryParams.address"
@@ -28,7 +28,7 @@
             size="small"
             @keyup.enter.native="handleQuery"
         />
-      </el-form-item>      
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -66,22 +66,22 @@
       </el-col>
     </el-row>
     <el-table v-loading="loading" :data="coinList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />      
+      <el-table-column type="selection" width="55" align="center" />
       <!-- <el-table-column label="" align="center" prop="id" />       -->
       <el-table-column label="序号" width="50">
         <template v-slot="scope">
           {{ scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="代币简称" align="center" prop="symbol" />      
-      <el-table-column label="链Id" align="center" prop="chainId" :formatter="chainIdFormat" width="100">
+      <el-table-column label="代币简称" align="center" prop="symbol" />
+      <el-table-column label="链" align="center" prop="chainId" :formatter="chainIdFormat" width="100">
         <template slot-scope="scope">
           {{ chainIdFormat(scope.row) }}
         </template>
-      </el-table-column>      
-      <el-table-column label="代币地址" align="center" prop="address" />      
-      <el-table-column label="精度" align="center" prop="decimals" />      
-      <el-table-column label="代币图标" align="center" prop="icon" />      
+      </el-table-column>
+      <el-table-column label="代币地址" align="center" prop="address" />
+      <el-table-column label="精度" align="center" prop="decimals" />
+      <el-table-column label="代币图标" align="center" prop="icon" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -91,13 +91,13 @@
             @click="handleUpdate(scope.row)"
             v-hasPermi="['admin/coin/edit']"
           >修改</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['admin/coin/delete']"
-          >删除</el-button>
+<!--          <el-button-->
+<!--            size="mini"-->
+<!--            type="text"-->
+<!--            icon="el-icon-delete"-->
+<!--            @click="handleDelete(scope.row)"-->
+<!--            v-hasPermi="['admin/coin/delete']"-->
+<!--          >删除</el-button>-->
         </template>
       </el-table-column>
     </el-table>
@@ -110,15 +110,15 @@
     />
     <!-- 添加或修改币种管理对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body :close-on-click-modal="false">
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">      
+      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
       <el-form-item label="代币名称" prop="name">
            <el-input v-model="form.name" placeholder="请输入代币名称" />
-      </el-form-item>      
+      </el-form-item>
       <el-form-item label="代币简称" prop="symbol">
            <el-input v-model="form.symbol" placeholder="请输入代币简称" />
-      </el-form-item>      
-      <el-form-item label="链Id" prop="chainId">
-          <el-select v-model="form.chainId" placeholder="请选择链Id">
+      </el-form-item>
+      <el-form-item label="链" prop="chainId">
+          <el-select v-model="form.chainId" placeholder="请选择链">
               <el-option
                   v-for="item in chainIdOptions"
                   :key="item.key"
@@ -126,10 +126,10 @@
                   :value="item.key"
               ></el-option>
           </el-select>
-      </el-form-item>      
+      </el-form-item>
       <el-form-item label="代币地址" prop="address">
            <el-input v-model="form.address" placeholder="请输入代币地址" />
-      </el-form-item>      
+      </el-form-item>
        <el-form-item label="是否上架" prop="isEnable">
            <el-radio-group v-model="form.isEnable">
                <el-radio
@@ -138,20 +138,20 @@
                 :label="dict.key"
                >{{dict.value }}</el-radio>
            </el-radio-group>
-       </el-form-item>      
+       </el-form-item>
       <el-form-item label="币种类型" prop="tokenType">
           <el-select v-model="form.tokenType" placeholder="请选择币种类型">
               <el-option
                   v-for="dict in tokenTypeOptions"
                   :key="dict.key"
-                  :label="dict.value"                  
-                      :value="dict.key"                  
+                  :label="dict.value"
+                      :value="dict.key"
               ></el-option>
           </el-select>
-      </el-form-item>      
+      </el-form-item>
       <el-form-item label="代币图标" prop="icon">
            <el-input v-model="form.icon" placeholder="请输入代币图标" />
-      </el-form-item>       
+      </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -166,8 +166,8 @@ import {
     getCoin,
     delCoin,
     addCoin,
-    updateCoin,    
-    listChain,    
+    updateCoin,
+    listChain,
 } from "@/api/admin/coin";
 export default {
   components:{},
@@ -189,13 +189,13 @@ export default {
       // 弹出层标题
       title: "",
       // 是否显示弹出层
-      open: false,      
+      open: false,
       // chainIdOptions关联表数据
-      chainIdOptions: [],      
+      chainIdOptions: [],
       // isEnableOptions字典数据
-      isEnableOptions: [],      
+      isEnableOptions: [],
       // tokenTypeOptions字典数据
-      tokenTypeOptions: [],      
+      tokenTypeOptions: [],
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -207,7 +207,7 @@ export default {
       // 表单参数
       form: {},
       // 表单校验
-      rules: { 
+      rules: {
         name : [
           { required: true, message: "代币名称不能为空", trigger: "blur" }
         ],
@@ -215,7 +215,7 @@ export default {
           { required: true, message: "代币简称不能为空", trigger: "blur" }
         ],
         chainId : [
-          { required: true, message: "链Id不能为空", trigger: "blur" }
+          { required: true, message: "链不能为空", trigger: "blur" }
         ],
         address : [
           { required: true, message: "代币地址不能为空", trigger: "blur" }
@@ -235,23 +235,23 @@ export default {
       }
     };
   },
-  created() {    
-    this.getChainItems()    
+  created() {
+    this.getChainItems()
     this.getDicts("is_enable").then(response => {
       this.isEnableOptions = response.data.values||[];
-    });    
+    });
     this.getDicts("token_type").then(response => {
       this.tokenTypeOptions = response.data.values||[];
     });
     this.getList();
   },
-  methods: {    
+  methods: {
     //关联chain表选项
     getChainItems() {
       this.getItems(listChain, {pageSize:10000}).then(res => {
         this.chainIdOptions = this.setItems(res, 'chainId', 'name')
       })
-    },    
+    },
     /** 查询币种管理列表 */
     getList() {
       this.loading = true;
@@ -260,19 +260,19 @@ export default {
         this.total = response.data.total;
         this.loading = false;
       });
-    },    
+    },
     // 链Id关联表翻译
     chainIdFormat(row, column) {
       return this.selectItemsLabel(this.chainIdOptions, row.chainId);
-    },    
+    },
     // 是否上架字典翻译
     isEnableFormat(row, column) {
       return this.selectDictLabel(this.isEnableOptions, row.isEnable);
-    },    
+    },
     // 币种类型字典翻译
     tokenTypeFormat(row, column) {
       return this.selectDictLabel(this.tokenTypeOptions, row.tokenType);
-    },    
+    },
     // 取消按钮
     cancel() {
       this.open = false;
@@ -280,19 +280,19 @@ export default {
     },
     // 表单重置
     reset() {
-      this.form = {        
-        id: undefined,        
-        name: undefined,        
-        symbol: undefined,        
-        chainId: undefined,        
-        address: undefined,        
-        isEnable: "0" ,        
-        createAt: undefined,        
-        updateAt: undefined,        
-        tokenType: undefined,        
-        decimals: undefined,        
-        icon: undefined,        
-      };      
+      this.form = {
+        id: undefined,
+        name: undefined,
+        symbol: undefined,
+        chainId: undefined,
+        address: undefined,
+        isEnable: "0" ,
+        createAt: undefined,
+        updateAt: undefined,
+        tokenType: undefined,
+        decimals: undefined,
+        icon: undefined,
+      };
       this.resetForm("form");
     },
     /** 搜索按钮操作 */
@@ -322,10 +322,10 @@ export default {
       this.reset();
       const id = row.id || this.ids
       getCoin(id).then(response => {
-        let data = response.data;        
-        data.chainId = ''+data.chainId        
-        data.isEnable = ''+data.isEnable        
-        data.tokenType = ''+data.tokenType        
+        let data = response.data;
+        data.chainId = ''+data.chainId
+        data.isEnable = ''+data.isEnable
+        data.tokenType = ''+data.tokenType
         this.form = data;
         this.open = true;
         this.title = "修改币种管理";
