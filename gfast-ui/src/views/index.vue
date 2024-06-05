@@ -1,30 +1,30 @@
 <template>
   <div class="dashboard-editor-container">
     <div class="dashboard-promote">
-      <el-row>
-        <el-col :span="24">
-          <el-card class="box-card">
-            <p>领取阿里云通用云产品优惠券</p>
-            <p>
-              <a
-                target="_blank"
-                class="text-info"
-                href="https://www.aliyun.com/minisite/goods?userCode=fcor2omk"
-                >https://www.aliyun.com/minisite/goods?userCode=fcor2omk</a
-              >
-            </p>
-            <p>领取腾讯云通用云产品优惠券</p>
-            <p>
-              <a
-                target="_blank"
-                class="text-info"
-                href="https://cloud.tencent.com/act/cps/redirect?redirect=1062&cps_key=20b1c3842f74986b2894e2c5fcde7ea2&from=console"
-                >https://cloud.tencent.com/act/cps/redirect?redirect=1062&cps_key=20b1c3842f74986b2894e2c5fcde7ea2&from=console</a
-              >
-            </p>
-          </el-card>
-        </el-col>
-      </el-row>
+<!--      <el-row>-->
+<!--        <el-col :span="24">-->
+<!--          <el-card class="box-card">-->
+<!--            <p>领取阿里云通用云产品优惠券</p>-->
+<!--            <p>-->
+<!--              <a-->
+<!--                target="_blank"-->
+<!--                class="text-info"-->
+<!--                href="https://www.aliyun.com/minisite/goods?userCode=fcor2omk"-->
+<!--                >https://www.aliyun.com/minisite/goods?userCode=fcor2omk</a-->
+<!--              >-->
+<!--            </p>-->
+<!--            <p>领取腾讯云通用云产品优惠券</p>-->
+<!--            <p>-->
+<!--              <a-->
+<!--                target="_blank"-->
+<!--                class="text-info"-->
+<!--                href="https://cloud.tencent.com/act/cps/redirect?redirect=1062&cps_key=20b1c3842f74986b2894e2c5fcde7ea2&from=console"-->
+<!--                >https://cloud.tencent.com/act/cps/redirect?redirect=1062&cps_key=20b1c3842f74986b2894e2c5fcde7ea2&from=console</a-->
+<!--              >-->
+<!--            </p>-->
+<!--          </el-card>-->
+<!--        </el-col>-->
+<!--      </el-row>-->
     </div>
     <!--    <panel-group @handleSetLineChartData="handleSetLineChartData" />-->
   </div>
