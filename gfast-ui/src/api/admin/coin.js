@@ -51,3 +51,15 @@ export function listChain(query){
      params: query
    })
 }
+
+// 导出岗位
+export function exportCoin(query) {
+  return request({
+    url: '/admin/coin/export',
+    method: 'get',
+    params: query,
+    responseType: 'blob'
+  })
+}
+
+

@@ -31,7 +31,7 @@
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+<!--        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>-->
       </el-form-item>
     </el-form>
     <el-row :gutter="10" class="mb8">
@@ -44,26 +44,35 @@
           v-hasPermi="['admin/coin/add']"
         >新增</el-button>
       </el-col>
+<!--      <el-col :span="1.5">-->
+<!--        <el-button-->
+<!--          type="success"-->
+<!--          icon="el-icon-edit"-->
+<!--          size="mini"-->
+<!--          :disabled="single"-->
+<!--          @click="handleUpdate"-->
+<!--          v-hasPermi="['admin/coin/edit']"-->
+<!--        >修改</el-button>-->
+<!--      </el-col>-->
       <el-col :span="1.5">
         <el-button
-          type="success"
-          icon="el-icon-edit"
+          type="warning"
+          icon="el-icon-download"
           size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['admin/coin/edit']"
-        >修改</el-button>
+          @click="handleExport"
+          v-hasPermi="['admin/coin/export']"
+        >导出</el-button>
       </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['admin/coin/delete']"
-        >删除</el-button>
-      </el-col>
+<!--      <el-col :span="1.5">-->
+<!--        <el-button-->
+<!--          type="danger"-->
+<!--          icon="el-icon-delete"-->
+<!--          size="mini"-->
+<!--          :disabled="multiple"-->
+<!--          @click="handleDelete"-->
+<!--          v-hasPermi="['admin/coin/delete']"-->
+<!--        >删除</el-button>-->
+<!--      </el-col>-->
     </el-row>
     <el-table v-loading="loading" :data="coinList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
@@ -168,7 +177,9 @@ import {
     addCoin,
     updateCoin,
     listChain,
+    exportCoin
 } from "@/api/admin/coin";
+import {exportPost} from "@/api/system/post";
 export default {
   components:{},
   name: "Coin",
@@ -372,7 +383,34 @@ export default {
           this.getList();
           this.msgSuccess("删除成功");
         }).catch(function() {});
+    },
+
+    /** 导出按钮操作 */
+    handleExport() {
+      const queryParams = this.queryParams;
+      this.$confirm('是否确认导出所有币种?', "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(() => {
+        return exportCoin(queryParams);
+      }).then(response => {
+        this.download(response);
+      }).catch(() => {});
+    },
+
+    download(data) {
+      console.log('Received data:', data);
+      console.log('Data type:', typeof data);
+
+      const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = 'coins.xlsx';
+      link.click();
+      window.URL.revokeObjectURL(link.href);
     }
+
   }
 };
 </script>
