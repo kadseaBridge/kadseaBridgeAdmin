@@ -60,3 +60,13 @@ export function listCoin(query){
      params: query
    })
 }
+
+// 导出岗位
+export function exportBridgeConfig(query) {
+  return request({
+    url: '/admin/bridgeConfig/export',
+    method: 'get',
+    params: query,
+    responseType: 'blob'
+  })
+}

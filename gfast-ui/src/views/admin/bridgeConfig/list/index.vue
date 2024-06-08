@@ -36,6 +36,15 @@
           v-hasPermi="['admin/bridgeConfig/add']"
         >新增</el-button>
       </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="warning"
+          icon="el-icon-download"
+          size="mini"
+          @click="handleExport"
+          v-hasPermi="['admin/coin/export']"
+        >导出</el-button>
+      </el-col>
 <!--      <el-col :span="1.5">-->
 <!--        <el-button-->
 <!--          type="success"-->
@@ -118,7 +127,7 @@
       :limit.sync="queryParams.pageSize"
       @pagination="getList"
     />
-    <!-- 添加或修改可跨币对对话框 -->
+    <!-- 添加或修改跨链币对对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body :close-on-click-modal="false">
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
       <el-form-item label="当前链" prop="sourceChainId">
@@ -152,16 +161,16 @@
           </el-select>
       </el-form-item>
 
-      <el-form-item label="固定金额手续费，" prop="feeFixed">
+      <el-form-item label="固定金额手续费：" label-width="150px" prop="feeFixed">
            <el-input v-model="form.feeFixed" placeholder="请输入固定金额手续费，" />
       </el-form-item>
-      <el-form-item label="手续费百分比，如果不需要则设置为0" prop="feePercent">
+      <el-form-item label="手续费百分比：" label-width="150px" prop="feePercent">
            <el-input v-model="form.feePercent" placeholder="请输入手续费百分比，如果不需要则设置为0" />
       </el-form-item>
-      <el-form-item label="跨入每日审核数量" prop="dayTotal">
+      <el-form-item label="跨入每日审核数量" label-width="150px" prop="dayTotal">
            <el-input v-model="form.dayTotal" placeholder="请输入跨入每日审核数量" />
       </el-form-item>
-      <el-form-item label="跨入单次审核数量" prop="onceTotal">
+      <el-form-item label="跨入单次审核数量" label-width="150px" prop="onceTotal">
            <el-input v-model="form.onceTotal" placeholder="请输入跨入单次审核数量" />
       </el-form-item>
        <el-form-item label="状态" prop="isEnable">
@@ -193,7 +202,9 @@ import {
     updateBridgeConfig,
     listChain,
     listCoin,
+    exportBridgeConfig
 } from "@/api/admin/bridgeConfig";
+import {exportCoin} from "@/api/admin/coin";
 export default {
   components:{},
   name: "BridgeConfig",
@@ -209,7 +220,7 @@ export default {
       multiple: true,
       // 总条数
       total: 0,
-      // 可跨币对表格数据
+      // 跨链币对表格数据
       bridgeConfigList: [],
       // 弹出层标题
       title: "",
@@ -296,7 +307,7 @@ export default {
         this.sourceCoinAddressOptions = this.setItems(res, 'address', 'symbol')
       })
     },
-    /** 查询可跨币对列表 */
+    /** 查询跨链币对列表 */
     getList() {
       this.loading = true;
       listBridgeConfig(this.queryParams).then(response => {
@@ -364,7 +375,7 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
-      this.title = "添加可跨币对";
+      this.title = "添加跨链币对";
 
     },
     /** 修改按钮操作 */
@@ -379,7 +390,7 @@ export default {
         data.isEnable = ''+data.isEnable
         this.form = data;
         this.open = true;
-        this.title = "修改可跨币对";
+        this.title = "修改跨链币对";
       });
     },
     /** 提交按钮 */
@@ -413,7 +424,7 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const ids = row.id || this.ids;
-      this.$confirm('是否确认删除可跨币对编号为"' + ids + '"的数据项?', "警告", {
+      this.$confirm('是否确认删除跨链币对编号为"' + ids + '"的数据项?', "警告", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
@@ -423,6 +434,32 @@ export default {
           this.getList();
           this.msgSuccess("删除成功");
         }).catch(function() {});
+    },
+
+    /** 导出按钮操作 */
+    handleExport() {
+      const queryParams = this.queryParams;
+      this.$confirm('是否确认导出所有跨链币对?', "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(() => {
+        return exportBridgeConfig(queryParams);
+      }).then(response => {
+        this.download(response);
+      }).catch(() => {});
+    },
+
+    download(data) {
+      console.log('Received data:', data);
+      console.log('Data type:', typeof data);
+
+      const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = '跨链币对表.xlsx';
+      link.click();
+      window.URL.revokeObjectURL(link.href);
     }
   }
 };
