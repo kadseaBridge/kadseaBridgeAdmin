@@ -1,49 +1,48 @@
 import request from '@/utils/request'
-// 查询可跨币对列表
-export function listBridgeConfig(query) {
+// 查询支付详情列表
+export function listPayDetail(query) {
   return request({
-    url: '/admin/bridgeConfig/list',
+    url: '/admin/payDetail/list',
     method: 'get',
     params: query
   })
 }
-// 查询可跨币对详细
-export function getBridgeConfig(id) {
+// 查询支付详情详细
+export function getPayDetail(id) {
   return request({
-    url: '/admin/bridgeConfig/get',
+    url: '/admin/payDetail/get',
     method: 'get',
     params: {
      id: id.toString()
     }
   })
 }
-// 新增可跨币对
-export function addBridgeConfig(data) {
+// 新增支付详情
+export function addPayDetail(data) {
   return request({
-    url: '/admin/bridgeConfig/add',
+    url: '/admin/payDetail/add',
     method: 'post',
     data: data
   })
 }
-// 修改可跨币对
-export function updateBridgeConfig(data) {
+// 修改支付详情
+export function updatePayDetail(data) {
   return request({
-    url: '/admin/bridgeConfig/edit',
+    url: '/admin/payDetail/edit',
     method: 'put',
     data: data
   })
 }
-// 删除可跨币对
-export function delBridgeConfig(ids) {
+// 删除支付详情
+export function delPayDetail(ids) {
   return request({
-    url: '/admin/bridgeConfig/delete',
+    url: '/admin/payDetail/delete',
     method: 'delete',
     data:{
        ids:ids
     }
   })
 }
-
 // 关联chain表选项
 export function listChain(query){
    return request({
@@ -59,14 +58,4 @@ export function listCoin(query){
      method: 'get',
      params: query
    })
-}
-
-// 导出岗位
-export function exportBridgeConfig(query) {
-  return request({
-    url: '/admin/bridgeConfig/export',
-    method: 'get',
-    params: query,
-    responseType: 'blob'
-  })
 }

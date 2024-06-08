@@ -77,6 +77,33 @@ func (s *coin) GetInfoById(ctx context.Context, id int64) (info *model.Coin, err
 	return
 }
 
+// GetInfoById 通过id获取
+func (s *coin) GetNameByAddress(ctx context.Context, address string) (name string, err error) {
+	if address == "" {
+		err = gerror.New("参数错误")
+		return
+	}
+
+	// 创建一个临时结构体来接收只包含 Name 字段的数据
+	var result struct {
+		Name string
+	}
+
+	// 只选择 Name 字段
+	err = dao.Coin.Ctx(ctx).Where(dao.Coin.Columns.Address, address).Fields("name").Scan(&result)
+	if err != nil {
+		g.Log().Error(err)
+		return
+	}
+	if result.Name == "" {
+		err = gerror.New("获取信息失败")
+		return
+	}
+
+	name = result.Name
+	return
+}
+
 // Add 添加
 func (s *coin) Add(ctx context.Context, req *dao.CoinAddReq) (err error) {
 	_, err = dao.Coin.Ctx(ctx).Insert(req)
@@ -114,7 +141,7 @@ func (s *coin) ExportCoins(req *dao.CoinSearchReq) ([]byte, error) {
 	// 创建 Excel 文件
 	f := excelize.NewFile()
 	// 设置表头
-	headers := []string{"Id", "Name", "Symbol", "ChainId", "Address", "IsEnable", "CreateAt", "UpdateAt", "TokenType", "Decimals", "Icon"}
+	headers := []string{"序号", "币种", "链", "精度", "合约地址", "图标"}
 	for i, header := range headers {
 		cell := fmt.Sprintf("%c1", 'A'+i)
 		f.SetCellValue("Sheet1", cell, header)
@@ -122,17 +149,17 @@ func (s *coin) ExportCoins(req *dao.CoinSearchReq) ([]byte, error) {
 
 	// 填充数据
 	for i, coin := range list {
+
+		SourceChainName, err := Chain.GetNameByChainId(req.Ctx, coin.ChainId)
+		if err != nil {
+			err = gerror.New("获取链名称名称失败")
+		}
 		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", i+2), coin.Id)
 		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", i+2), coin.Name)
-		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", i+2), coin.Symbol)
-		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", i+2), coin.ChainId)
+		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", i+2), SourceChainName)
+		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", i+2), coin.Decimals)
 		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", i+2), coin.Address)
-		f.SetCellValue("Sheet1", fmt.Sprintf("F%d", i+2), coin.IsEnable)
-		f.SetCellValue("Sheet1", fmt.Sprintf("G%d", i+2), coin.CreateAt.String())
-		f.SetCellValue("Sheet1", fmt.Sprintf("H%d", i+2), coin.UpdateAt.String())
-		f.SetCellValue("Sheet1", fmt.Sprintf("I%d", i+2), coin.TokenType)
-		f.SetCellValue("Sheet1", fmt.Sprintf("J%d", i+2), coin.Decimals)
-		f.SetCellValue("Sheet1", fmt.Sprintf("K%d", i+2), coin.Icon)
+		f.SetCellValue("Sheet1", fmt.Sprintf("F%d", i+2), coin.Icon)
 	}
 
 	// 将 Excel 文件写入缓冲区

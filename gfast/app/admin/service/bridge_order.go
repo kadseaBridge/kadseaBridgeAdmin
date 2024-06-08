@@ -8,12 +8,15 @@
 package service
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"gfast/app/admin/dao"
 	"gfast/app/admin/model"
 	comModel "gfast/app/common/model"
 	"github.com/gogf/gf/errors/gerror"
 	"github.com/gogf/gf/frame/g"
+	"github.com/xuri/excelize/v2"
 )
 
 type bridgeOrder struct {
@@ -22,7 +25,7 @@ type bridgeOrder struct {
 var BridgeOrder = new(bridgeOrder)
 
 // GetList 获取任务列表
-func (s *bridgeOrder) GetList(req *dao.BridgeOrderSearchReq) (total, page int, list []*model.BridgeOrder, err error) {
+func (s *bridgeOrder) GetList(req *dao.BridgeOrderSearchReq) (total, page int, orderlist []*model.BridgeOrderRsp, err error) {
 	m := dao.BridgeOrder.Ctx(req.Ctx)
 	if req.SourceAddress != "" {
 		m = m.Where(dao.BridgeOrder.Columns.SourceAddress+" = ?", req.SourceAddress)
@@ -71,7 +74,42 @@ func (s *bridgeOrder) GetList(req *dao.BridgeOrderSearchReq) (total, page int, l
 	if req.OrderBy != "" {
 		order = req.OrderBy
 	}
+
+	var list []*model.BridgeOrder
 	err = m.Page(page, req.PageSize).Order(order).Scan(&list)
+
+	rsp := make([]*model.BridgeOrderRsp, len(list))
+
+	for i, order := range list {
+
+		tx, gas, err := PayDetail.GetGasAndTxByOrderId(req.Ctx, order.OrderId)
+		if err != nil {
+			err = gerror.New("获取链名称名称失败")
+		}
+		rsp[i] = &model.BridgeOrderRsp{
+			Id:                order.Id,
+			SourceAddress:     order.SourceAddress,
+			TargetAddress:     order.TargetAddress,
+			SourceCoinAddress: order.SourceCoinAddress,
+			TargetCoinAddress: order.TargetCoinAddress,
+			SourceChainId:     order.SourceChainId,
+			TargetChainId:     order.TargetChainId,
+			InHash:            tx,
+			OutHash:           order.TransactionHash,
+			OrderId:           order.OrderId,
+			Amount:            order.Amount,
+			Status:            order.Status,
+			CreateAt:          order.CreateAt,
+			UpdateAt:          order.UpdateAt,
+			BlockNumber:       order.BlockNumber,
+			Fee:               order.Fee,
+			GasFee:            gas,
+			Remark:            order.Remark,
+		}
+	}
+
+	orderlist = rsp
+
 	if err != nil {
 		g.Log().Error(err)
 		err = gerror.New("获取数据失败")
@@ -128,4 +166,72 @@ func (s *bridgeOrder) ChangeStatus(ctx context.Context, req *dao.BridgeOrderStat
 		dao.BridgeOrder.Columns.Status: req.Status,
 	})
 	return err
+}
+
+func (s *bridgeOrder) ExportOrders(req *dao.BridgeOrderSearchReq) ([]byte, error) {
+	// 获取数据库连接
+	_, _, list, err := s.GetList(req)
+	if err != nil {
+		err = gerror.New("参数错误")
+	}
+
+	// 创建 Excel 文件
+	f := excelize.NewFile()
+	// 设置表头
+	headers := []string{"序号", "转出币种", "转入币种", "转出链", "转入链", "数量", "手续费", "gas费", "转入钱包地址", "转出钱包地址", "转出TXID", "转入TXID", "发起时间", "结束时间", "状态"}
+
+	for i, header := range headers {
+		cell := fmt.Sprintf("%c1", 'A'+i)
+		f.SetCellValue("Sheet1", cell, header)
+	}
+
+	// 填充数据
+	for i, order := range list {
+
+		sourceName, err := Coin.GetNameByAddress(req.Ctx, order.SourceCoinAddress)
+		if err != nil {
+			err = gerror.New("获取币种名称失败")
+		}
+
+		targetName, err := Coin.GetNameByAddress(req.Ctx, order.SourceCoinAddress)
+		if err != nil {
+			err = gerror.New("获取币种名称失败")
+		}
+
+		SourceChainName, err := Chain.GetNameByChainId(req.Ctx, order.SourceChainId)
+		if err != nil {
+			err = gerror.New("获取链名称名称失败")
+		}
+
+		TargetChainName, err := Chain.GetNameByChainId(req.Ctx, order.TargetChainId)
+		if err != nil {
+			err = gerror.New("获取链名称名称失败")
+		}
+		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", i+2), order.Id)
+		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", i+2), sourceName)
+		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", i+2), targetName)
+		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", i+2), SourceChainName)
+		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", i+2), TargetChainName)
+		f.SetCellValue("Sheet1", fmt.Sprintf("F%d", i+2), order.Amount)
+		f.SetCellValue("Sheet1", fmt.Sprintf("G%d", i+2), order.Fee)
+		f.SetCellValue("Sheet1", fmt.Sprintf("H%d", i+2), order.GasFee)
+		f.SetCellValue("Sheet1", fmt.Sprintf("I%d", i+2), order.SourceAddress)
+		f.SetCellValue("Sheet1", fmt.Sprintf("J%d", i+2), order.TargetAddress)
+		f.SetCellValue("Sheet1", fmt.Sprintf("K%d", i+2), order.OutHash)
+		f.SetCellValue("Sheet1", fmt.Sprintf("L%d", i+2), order.InHash)
+		f.SetCellValue("Sheet1", fmt.Sprintf("M%d", i+2), order.CreateAt)
+		f.SetCellValue("Sheet1", fmt.Sprintf("N%d", i+2), order.UpdateAt)
+		f.SetCellValue("Sheet1", fmt.Sprintf("O%d", i+2), order.Status)
+	}
+
+	// 将 Excel 文件写入缓冲区
+	var buf bytes.Buffer
+	if err := f.Write(&buf); err != nil {
+		return nil, err
+	}
+
+	// 添加日志输出
+	g.Log().Info("Excel file created successfully")
+
+	return buf.Bytes(), nil
 }

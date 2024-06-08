@@ -1,7 +1,7 @@
 // ==========================================================================
 // GFast自动生成业务逻辑层相关代码，只生成一次，按需修改,再次生成不会覆盖.
-// 生成日期：2024-05-30 18:31:15
-// 生成路径: gfast/app/admin/service/chain.go
+// 生成日期：2024-06-08 23:23:41
+// 生成路径: gfast/app/admin/service/pay_detail.go
 // 生成人：jimmy
 // ==========================================================================
 
@@ -16,22 +16,16 @@ import (
 	"github.com/gogf/gf/frame/g"
 )
 
-type chain struct {
+type payDetail struct {
 }
 
-var Chain = new(chain)
+var PayDetail = new(payDetail)
 
 // GetList 获取任务列表
-func (s *chain) GetList(req *dao.ChainSearchReq) (total, page int, list []*model.Chain, err error) {
-	m := dao.Chain.Ctx(req.Ctx)
-	if req.Name != "" {
-		m = m.Where(dao.Chain.Columns.Name+" like ?", "%"+req.Name+"%")
-	}
-	if req.ChainId != "" {
-		m = m.Where(dao.Chain.Columns.ChainId+" = ?", req.ChainId)
-	}
-	if req.IsEnable != "" {
-		m = m.Where(dao.Chain.Columns.IsEnable+" = ?", req.IsEnable)
+func (s *payDetail) GetList(req *dao.PayDetailSearchReq) (total, page int, list []*model.PayDetail, err error) {
+	m := dao.PayDetail.Ctx(req.Ctx)
+	if req.OrderId != "" {
+		m = m.Where(dao.PayDetail.Columns.OrderId+" = ?", req.OrderId)
 	}
 	total, err = m.Count()
 	if err != nil {
@@ -59,12 +53,12 @@ func (s *chain) GetList(req *dao.ChainSearchReq) (total, page int, list []*model
 }
 
 // GetInfoById 通过id获取
-func (s *chain) GetInfoById(ctx context.Context, id int64) (info *model.Chain, err error) {
+func (s *payDetail) GetInfoById(ctx context.Context, id int64) (info *model.PayDetail, err error) {
 	if id == 0 {
 		err = gerror.New("参数错误")
 		return
 	}
-	err = dao.Chain.Ctx(ctx).Where(dao.Chain.Columns.Id, id).Scan(&info)
+	err = dao.PayDetail.Ctx(ctx).Where(dao.PayDetail.Columns.Id, id).Scan(&info)
 	if err != nil {
 		g.Log().Error(err)
 	}
@@ -75,25 +69,25 @@ func (s *chain) GetInfoById(ctx context.Context, id int64) (info *model.Chain, e
 }
 
 // Add 添加
-func (s *chain) Add(ctx context.Context, req *dao.ChainAddReq) (err error) {
-	_, err = dao.Chain.Ctx(ctx).Insert(req)
+func (s *payDetail) Add(ctx context.Context, req *dao.PayDetailAddReq) (err error) {
+	_, err = dao.PayDetail.Ctx(ctx).Insert(req)
 	return
 }
 
 // Edit 修改
-func (s *chain) Edit(ctx context.Context, req *dao.ChainEditReq) error {
-	_, err := dao.Chain.Ctx(ctx).FieldsEx(dao.Chain.Columns.Id).Where(dao.Chain.Columns.Id, req.Id).
+func (s *payDetail) Edit(ctx context.Context, req *dao.PayDetailEditReq) error {
+	_, err := dao.PayDetail.Ctx(ctx).FieldsEx(dao.PayDetail.Columns.Id).Where(dao.PayDetail.Columns.Id, req.Id).
 		Update(req)
 	return err
 }
 
 // DeleteByIds 删除
-func (s *chain) DeleteByIds(ctx context.Context, ids []int) (err error) {
+func (s *payDetail) DeleteByIds(ctx context.Context, ids []int) (err error) {
 	if len(ids) == 0 {
 		err = gerror.New("参数错误")
 		return
 	}
-	_, err = dao.Chain.Ctx(ctx).Delete(dao.Chain.Columns.Id+" in (?)", ids)
+	_, err = dao.PayDetail.Ctx(ctx).Delete(dao.PayDetail.Columns.Id+" in (?)", ids)
 	if err != nil {
 		g.Log().Error(err)
 		err = gerror.New("删除失败")
@@ -102,28 +96,30 @@ func (s *chain) DeleteByIds(ctx context.Context, ids []int) (err error) {
 }
 
 // GetInfoById 通过id获取
-func (s *chain) GetNameByChainId(ctx context.Context, chainId string) (name string, err error) {
-	if chainId == "" {
+func (s *payDetail) GetGasAndTxByOrderId(ctx context.Context, orderId string) (tx string, gas float64, err error) {
+	if orderId == "" {
 		err = gerror.New("参数错误")
 		return
 	}
 
 	// 创建一个临时结构体来接收只包含 Name 字段的数据
 	var result struct {
-		Name string
+		TransactionHash string
+		PayGasFee       float64
 	}
 
 	// 只选择 Name 字段
-	err = dao.Coin.Ctx(ctx).Where(dao.Chain.Columns.ChainId, chainId).Fields("name").Scan(&result)
+	err = dao.PayDetail.Ctx(ctx).Where(dao.PayDetail.Columns.OrderId, orderId).Fields("transaction_hash", "pay_gas_fee").Scan(&result)
 	if err != nil {
 		g.Log().Error(err)
 		return
 	}
-	if result.Name == "" {
-		err = gerror.New("获取信息失败")
-		return
-	}
+	//if result.TransactionHash == "" ||  {
+	//	err = gerror.New("获取信息失败")
+	//	return
+	//}
 
-	name = result.Name
+	tx = result.TransactionHash
+	gas = result.PayGasFee
 	return
 }

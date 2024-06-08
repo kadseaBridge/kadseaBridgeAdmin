@@ -63,16 +63,7 @@
           v-hasPermi="['admin/coin/export']"
         >导出</el-button>
       </el-col>
-<!--      <el-col :span="1.5">-->
-<!--        <el-button-->
-<!--          type="danger"-->
-<!--          icon="el-icon-delete"-->
-<!--          size="mini"-->
-<!--          :disabled="multiple"-->
-<!--          @click="handleDelete"-->
-<!--          v-hasPermi="['admin/coin/delete']"-->
-<!--        >删除</el-button>-->
-<!--      </el-col>-->
+
     </el-row>
     <el-table v-loading="loading" :data="coinList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
@@ -100,13 +91,6 @@
             @click="handleUpdate(scope.row)"
             v-hasPermi="['admin/coin/edit']"
           >修改</el-button>
-<!--          <el-button-->
-<!--            size="mini"-->
-<!--            type="text"-->
-<!--            icon="el-icon-delete"-->
-<!--            @click="handleDelete(scope.row)"-->
-<!--            v-hasPermi="['admin/coin/delete']"-->
-<!--          >删除</el-button>-->
         </template>
       </el-table-column>
     </el-table>

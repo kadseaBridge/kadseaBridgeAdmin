@@ -139,6 +139,16 @@
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
 <!--        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>-->
       </el-form-item>
+      <el-form-item>
+        <el-button
+          type="warning"
+          icon="el-icon-download"
+          size="mini"
+          @click="handleExport"
+          v-hasPermi="['admin/coin/export']"
+        >导出</el-button>
+      </el-form-item>
+
     </el-form>
     <el-row :gutter="10" class="mb8">
 <!--      <el-col :span="1.5">-->
@@ -176,8 +186,6 @@
       <el-table-column label="" align="center" prop="id" />
       <el-table-column label="转出币种" align="center" prop="sourceAddress" />
       <el-table-column label="转入币种" align="center" prop="targetAddress" />
-      <el-table-column label="转出钱包地址" align="center" prop="sourceCoinAddress" />
-      <el-table-column label="转入钱包地址" align="center" prop="targetCoinAddress" />
       <el-table-column label="转出链" align="center" prop="sourceChainId" :formatter="sourceChainIdFormat" width="100">
         <template slot-scope="scope">
           {{ sourceChainIdFormat(scope.row) }}
@@ -188,10 +196,17 @@
           {{ targetChainIdFormat(scope.row) }}
         </template>
       </el-table-column>
-      <el-table-column label="交易哈希" align="center" prop="transactionHash" />
-      <el-table-column label="跨链订单id" align="center" prop="orderId" />
       <el-table-column label="数量" align="center" prop="amount" />
-      <el-table-column label="跨链记录状态" align="center"  prop="status" :formatter="statusFormat" />
+      <el-table-column label="手续费" align="center" prop="fee" />
+      <el-table-column label="gas费" align="center" prop="gasFee" />
+      <el-table-column label="转入钱包地址" align="center" prop="targetCoinAddress" />
+      <el-table-column label="转出钱包地址" align="center" prop="sourceCoinAddress" />
+
+      <el-table-column label="转出TXID" align="center" prop="outHash" />
+      <el-table-column label="转入TXID" align="center" prop="inHash" />
+<!--      <el-table-column label="跨链订单id" align="center" prop="orderId" />-->
+
+      <el-table-column label="状态" align="center"  prop="status" :formatter="statusFormat" />
       <el-table-column label="发起时间" align="center" prop="createAt" width="180">
         <template slot-scope="scope">
             <span>{{ parseTime(scope.row.createAt, '{y}-{m}-{d}') }}</span>
@@ -207,7 +222,7 @@
         </span>
         </template>
       </el-table-column>
-      <el-table-column label="手续费" align="center" prop="fee" />
+
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -217,13 +232,6 @@
             @click="handleUpdate(scope.row)"
             v-hasPermi="['admin/bridgeOrder/edit']"
           >修改</el-button>
-<!--          <el-button-->
-<!--            size="mini"-->
-<!--            type="text"-->
-<!--            icon="el-icon-delete"-->
-<!--            @click="handleDelete(scope.row)"-->
-<!--            v-hasPermi="['admin/bridgeOrder/delete']"-->
-<!--          >删除</el-button>-->
         </template>
       </el-table-column>
     </el-table>
@@ -237,48 +245,48 @@
     <!-- 添加或修改跨链记录对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body :close-on-click-modal="false">
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-      <el-form-item label="转出币种" prop="sourceAddress">
-           <el-input v-model="form.sourceAddress" placeholder="请输入转出币种" />
-      </el-form-item>
-      <el-form-item label="转入币种" prop="targetAddress">
-           <el-input v-model="form.targetAddress" placeholder="请输入转入币种" />
-      </el-form-item>
-      <el-form-item label="转出钱包地址" prop="sourceCoinAddress">
-           <el-input v-model="form.sourceCoinAddress" placeholder="请输入转出钱包地址" />
-      </el-form-item>
-      <el-form-item label="转入钱包地址" prop="targetCoinAddress">
-           <el-input v-model="form.targetCoinAddress" placeholder="请输入转入钱包地址" />
-      </el-form-item>
-      <el-form-item label="转出链" prop="sourceChainId">
-          <el-select v-model="form.sourceChainId" placeholder="请选择转出链">
-              <el-option
-                  v-for="item in sourceChainIdOptions"
-                  :key="item.key"
-                  :label="item.value"
-                  :value="item.key"
-              ></el-option>
-          </el-select>
-      </el-form-item>
-      <el-form-item label="转入链" prop="targetChainId">
-          <el-select v-model="form.targetChainId" placeholder="请选择转入链">
-              <el-option
-                  v-for="item in targetChainIdOptions"
-                  :key="item.key"
-                  :label="item.value"
-                  :value="item.key"
-              ></el-option>
-          </el-select>
-      </el-form-item>
-      <el-form-item label="交易哈希" prop="transactionHash">
-           <el-input v-model="form.transactionHash" placeholder="请输入交易哈希" />
-      </el-form-item>
-      <el-form-item label="跨链订单id" prop="orderId">
-           <el-input v-model="form.orderId" placeholder="请输入跨链订单id" />
-      </el-form-item>
-      <el-form-item label="数量" prop="amount">
-           <el-input v-model="form.amount" placeholder="请输入数量" />
-      </el-form-item>
-      <el-form-item label="跨链记录状态" prop="status">
+<!--      <el-form-item label="转出币种" prop="sourceAddress">-->
+<!--           <el-input v-model="form.sourceAddress" placeholder="请输入转出币种" />-->
+<!--      </el-form-item>-->
+<!--      <el-form-item label="转入币种" prop="targetAddress">-->
+<!--           <el-input v-model="form.targetAddress" placeholder="请输入转入币种" />-->
+<!--      </el-form-item>-->
+<!--      <el-form-item label="转出钱包地址" prop="sourceCoinAddress">-->
+<!--           <el-input v-model="form.sourceCoinAddress" placeholder="请输入转出钱包地址" />-->
+<!--      </el-form-item>-->
+<!--      <el-form-item label="转入钱包地址" prop="targetCoinAddress">-->
+<!--           <el-input v-model="form.targetCoinAddress" placeholder="请输入转入钱包地址" />-->
+<!--      </el-form-item>-->
+<!--      <el-form-item label="转出链" prop="sourceChainId">-->
+<!--          <el-select v-model="form.sourceChainId" placeholder="请选择转出链">-->
+<!--              <el-option-->
+<!--                  v-for="item in sourceChainIdOptions"-->
+<!--                  :key="item.key"-->
+<!--                  :label="item.value"-->
+<!--                  :value="item.key"-->
+<!--              ></el-option>-->
+<!--          </el-select>-->
+<!--      </el-form-item>-->
+<!--      <el-form-item label="转入链" prop="targetChainId">-->
+<!--          <el-select v-model="form.targetChainId" placeholder="请选择转入链">-->
+<!--              <el-option-->
+<!--                  v-for="item in targetChainIdOptions"-->
+<!--                  :key="item.key"-->
+<!--                  :label="item.value"-->
+<!--                  :value="item.key"-->
+<!--              ></el-option>-->
+<!--          </el-select>-->
+<!--      </el-form-item>-->
+<!--      <el-form-item label="交易哈希" prop="transactionHash">-->
+<!--           <el-input v-model="form.transactionHash" placeholder="请输入交易哈希" />-->
+<!--      </el-form-item>-->
+<!--      <el-form-item label="跨链订单id" prop="orderId">-->
+<!--           <el-input v-model="form.orderId" placeholder="请输入跨链订单id" />-->
+<!--      </el-form-item>-->
+<!--      <el-form-item label="数量" prop="amount">-->
+<!--           <el-input v-model="form.amount" placeholder="请输入数量" />-->
+<!--      </el-form-item>-->
+      <el-form-item label="跨链记录状态" label-width="150px"  prop="status">
           <el-select v-model="form.status" placeholder="请选择跨链记录状态">
               <el-option
                   v-for="dict in statusOptions"
@@ -288,28 +296,28 @@
               ></el-option>
           </el-select>
       </el-form-item>
-       <el-form-item label="发起时间" prop="createAt">
-           <el-date-picker clearable size="small" style="width: 200px"
-               v-model="form.createAt"
-               type="date"
-               value-format="yyyy-MM-dd"
-               placeholder="选择发起时间">
-           </el-date-picker>
-       </el-form-item>
-       <el-form-item label="结束时间" prop="updateAt">
-           <el-date-picker clearable size="small" style="width: 200px"
-               v-model="form.updateAt"
-               type="date"
-               value-format="yyyy-MM-dd"
-               placeholder="选择结束时间">
-           </el-date-picker>
-       </el-form-item>
-      <el-form-item label="区块高度" prop="blockNumber">
-           <el-input v-model="form.blockNumber" placeholder="请输入区块高度" />
-      </el-form-item>
-      <el-form-item label="手续费" prop="fee">
-           <el-input v-model="form.fee" placeholder="请输入手续费" />
-      </el-form-item>
+<!--       <el-form-item label="发起时间" prop="createAt">-->
+<!--           <el-date-picker clearable size="small" style="width: 200px"-->
+<!--               v-model="form.createAt"-->
+<!--               type="date"-->
+<!--               value-format="yyyy-MM-dd"-->
+<!--               placeholder="选择发起时间">-->
+<!--           </el-date-picker>-->
+<!--       </el-form-item>-->
+<!--       <el-form-item label="结束时间" prop="updateAt">-->
+<!--           <el-date-picker clearable size="small" style="width: 200px"-->
+<!--               v-model="form.updateAt"-->
+<!--               type="date"-->
+<!--               value-format="yyyy-MM-dd"-->
+<!--               placeholder="选择结束时间">-->
+<!--           </el-date-picker>-->
+<!--       </el-form-item>-->
+<!--      <el-form-item label="区块高度" prop="blockNumber">-->
+<!--           <el-input v-model="form.blockNumber" placeholder="请输入区块高度" />-->
+<!--      </el-form-item>-->
+<!--      <el-form-item label="手续费" prop="fee">-->
+<!--           <el-input v-model="form.fee" placeholder="请输入手续费" />-->
+<!--      </el-form-item>-->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -327,7 +335,9 @@ import {
     updateBridgeOrder,
     listChain,
     changeBridgeOrderStatus,
+    exportBridgeOrder,
 } from "@/api/admin/bridgeOrder";
+import {exportCoin} from "@/api/admin/coin";
 export default {
   components:{},
   name: "BridgeOrder",
@@ -511,7 +521,7 @@ export default {
         data.status = ''+data.status
         this.form = data;
         this.open = true;
-        this.title = "修改跨链记录";
+        this.title = "修改跨链记录状态";
       });
     },
     /** 提交按钮 */
@@ -555,7 +565,34 @@ export default {
           this.getList();
           this.msgSuccess("删除成功");
         }).catch(function() {});
+    },
+
+    /** 导出按钮操作 */
+    handleExport() {
+      const queryParams = this.queryParams;
+      this.$confirm('是否确认导出所有跨链记录?', "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(() => {
+        return exportBridgeOrder(queryParams);
+      }).then(response => {
+        this.download(response);
+      }).catch(() => {});
+    },
+
+    download(data) {
+      console.log('Received data:', data);
+      console.log('Data type:', typeof data);
+
+      const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = 'bridgeOrder.xlsx';
+      link.click();
+      window.URL.revokeObjectURL(link.href);
     }
+
   }
 };
 </script>

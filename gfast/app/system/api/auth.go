@@ -1,12 +1,14 @@
 package api
 
 import (
+	"fmt"
 	"gfast/app/common/api"
 	comModel "gfast/app/common/model"
 	commonService "gfast/app/common/service"
 	"gfast/app/system/model"
 	"gfast/app/system/service"
 	"gfast/library"
+	"github.com/gogf/gf/os/genv"
 	"strings"
 
 	"github.com/goflyfox/gtoken/gtoken"
@@ -47,7 +49,7 @@ var (
 	}
 )
 
-//后台用户登陆验证
+// 后台用户登陆验证
 func (c *auth) login(r *ghttp.Request) (string, interface{}) {
 	var ctx = r.GetCtx()
 	var apiReq *model.LoginParamsReq
@@ -55,13 +57,13 @@ func (c *auth) login(r *ghttp.Request) (string, interface{}) {
 		c.FailJsonExit(r, err.(gvalid.Error).Current().Error())
 	}
 	//判断验证码是否正确
-	// debug := genv.GetWithCmd("gf.debug")
-	// fmt.Println(apiReq.VerifyCode)
-	// if debug.Int() != 1 {
-	// 	if !commonService.Captcha.VerifyString(apiReq.VerifyKey, apiReq.VerifyCode) {
-	// 		c.FailJson(true, r, "验证码输入错误")
-	// 	}
-	// }
+	debug := genv.GetWithCmd("gf.debug")
+	fmt.Println(apiReq.VerifyCode)
+	if debug.Int() != 1 {
+		if !commonService.Captcha.VerifyString(apiReq.VerifyKey, apiReq.VerifyCode) {
+			c.FailJson(true, r, "验证码输入错误")
+		}
+	}
 
 	ip := library.GetClientIp(r)
 	userAgent := r.Header.Get("User-Agent")
@@ -77,10 +79,16 @@ func (c *auth) login(r *ghttp.Request) (string, interface{}) {
 		})
 		c.FailJsonExit(r, err.Error())
 	} else if user != nil {
+		//如果用戶沒有綁定google验证码，就绑定
 		if user.Googleauth != "" {
-			if valid, _ := commonService.NewGoogleAuth().VerifyCode(user.Googleauth, apiReq.Googlecode); !valid {
-				c.FailJsonExit(r, "google验证码错误！")
-			}
+			//secret, png, err := commonService.NewGoogleAuth2().GenerateSecretAndQRCode(user.UserName)
+			//if err != nil {
+			//	c.FailJsonExit(r, "google验证码错误！")
+			//}
+
+			// 		c.SusJsonExit(r, g.Map{
+			//			"token": token,
+			//		})
 		}
 
 		r.SetParam("userInfo", user)
@@ -98,7 +106,12 @@ func (c *auth) login(r *ghttp.Request) (string, interface{}) {
 	return "", nil
 }
 
-//登录成功返回
+// google绑定
+// func (c *auth) login(r *ghttp.Request) (string, interface{})
+
+// google验证
+
+// 登录成功返回
 func (c *auth) loginAfter(r *ghttp.Request, respData gtoken.Resp) {
 	if !respData.Success() {
 		r.Response.WriteJson(respData)
@@ -129,7 +142,7 @@ func (c *auth) loginAfter(r *ghttp.Request, respData gtoken.Resp) {
 	}
 }
 
-//gToken验证后返回
+// gToken验证后返回
 func (c *auth) authAfterFunc(r *ghttp.Request, respData gtoken.Resp) {
 	if r.Method == "OPTIONS" || respData.Success() {
 		r.Middleware.Next()
@@ -138,7 +151,7 @@ func (c *auth) authAfterFunc(r *ghttp.Request, respData gtoken.Resp) {
 	}
 }
 
-//后台退出登陆
+// 后台退出登陆
 func (c *auth) loginOut(r *ghttp.Request) bool {
 	//删除在线用户状态
 	authHeader := r.Header.Get("Authorization")

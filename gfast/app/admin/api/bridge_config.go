@@ -5,20 +5,24 @@
 // 生成人：jimmy
 // ==========================================================================
 
-
 package api
-import (    
-    sysApi "gfast/app/system/api"    
-    "gfast/app/admin/dao"
-    "gfast/app/admin/service"
-    "github.com/gogf/gf/frame/g"
-    "github.com/gogf/gf/net/ghttp"
-    "github.com/gogf/gf/util/gvalid"    
+
+import (
+	"fmt"
+	"gfast/app/admin/dao"
+	"gfast/app/admin/service"
+	sysApi "gfast/app/system/api"
+	"github.com/gogf/gf/frame/g"
+	"github.com/gogf/gf/net/ghttp"
+	"github.com/gogf/gf/util/gvalid"
 )
-type bridgeConfig struct {    
-    sysApi.SystemBase    
+
+type bridgeConfig struct {
+	sysApi.SystemBase
 }
+
 var BridgeConfig = new(bridgeConfig)
+
 // List 列表
 func (c *bridgeConfig) List(r *ghttp.Request) {
 	var req *dao.BridgeConfigSearchReq
@@ -38,47 +42,74 @@ func (c *bridgeConfig) List(r *ghttp.Request) {
 	}
 	c.SusJsonExit(r, result)
 }
+
 // Add 添加
 func (c *bridgeConfig) Add(r *ghttp.Request) {
-    var req *dao.BridgeConfigAddReq
-    //获取参数
-    if err := r.Parse(&req); err != nil {
-        c.FailJsonExit(r, err.(gvalid.Error).FirstString())
-    }    
-    err := service.BridgeConfig.Add(r.GetCtx(),req)
-    if err != nil {
-        c.FailJsonExit(r, err.Error())
-    }
-    c.SusJsonExit(r, "添加成功")
+	var req *dao.BridgeConfigAddReq
+	//获取参数
+	if err := r.Parse(&req); err != nil {
+		c.FailJsonExit(r, err.(gvalid.Error).FirstString())
+	}
+	err := service.BridgeConfig.Add(r.GetCtx(), req)
+	if err != nil {
+		c.FailJsonExit(r, err.Error())
+	}
+	c.SusJsonExit(r, "添加成功")
 }
+
 // Get 获取
 func (c *bridgeConfig) Get(r *ghttp.Request) {
 	id := r.GetInt64("id")
-	info, err := service.BridgeConfig.GetInfoById(r.GetCtx(),id)
+	info, err := service.BridgeConfig.GetInfoById(r.GetCtx(), id)
 	if err != nil {
 		c.FailJsonExit(r, err.Error())
 	}
 	c.SusJsonExit(r, info)
 }
+
 // Edit 修改
 func (c *bridgeConfig) Edit(r *ghttp.Request) {
-    var req *dao.BridgeConfigEditReq
-    //获取参数
-    if err := r.Parse(&req); err != nil {
-        c.FailJsonExit(r, err.(gvalid.Error).FirstString())
-    }    
-    err := service.BridgeConfig.Edit(r.GetCtx(),req)
-    if err != nil {
-        c.FailJsonExit(r, err.Error())
-    }
-    c.SusJsonExit(r, "修改成功")
+	var req *dao.BridgeConfigEditReq
+	//获取参数
+	if err := r.Parse(&req); err != nil {
+		c.FailJsonExit(r, err.(gvalid.Error).FirstString())
+	}
+	err := service.BridgeConfig.Edit(r.GetCtx(), req)
+	if err != nil {
+		c.FailJsonExit(r, err.Error())
+	}
+	c.SusJsonExit(r, "修改成功")
 }
+
 // Delete 删除
 func (c *bridgeConfig) Delete(r *ghttp.Request) {
 	ids := r.GetInts("ids")
-	err := service.BridgeConfig.DeleteByIds(r.GetCtx(),ids)
+	err := service.BridgeConfig.DeleteByIds(r.GetCtx(), ids)
 	if err != nil {
 		c.FailJsonExit(r, err.Error())
 	}
 	c.SusJsonExit(r, "删除成功")
+}
+
+// Export
+func (c *bridgeConfig) Export(r *ghttp.Request) {
+	var req *dao.BridgeConfigSearchReq
+	//获取参数
+	if err := r.Parse(&req); err != nil {
+		c.FailJsonExit(r, err.(gvalid.Error).FirstString())
+	}
+	req.Ctx = r.GetCtx()
+	data, err := service.BridgeConfig.ExportBridgeConfigs(req)
+	if err != nil {
+		r.Response.WriteJsonExit(g.Map{"error": err.Error()})
+	}
+
+	// 设置响应头以指示文件下载
+	r.Response.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	r.Response.Header().Set("Content-Disposition", `attachment; filename="coins.xlsx"`)
+	r.Response.Header().Set("Content-Length", fmt.Sprintf("%d", len(data)))
+
+	// 返回文件内容给前端
+	r.Response.Write(data)
+
 }
