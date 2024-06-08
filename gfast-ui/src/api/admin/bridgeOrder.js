@@ -64,3 +64,14 @@ export function changeBridgeOrderStatus(id,status) {
     data:data
   })
 }
+
+// 导出岗位
+export function exportBridgeOrder(query) {
+  return request({
+    url: '/admin/bridgeOrder/export',
+    method: 'get',
+    params: query,
+    responseType: 'blob'
+  })
+}
+

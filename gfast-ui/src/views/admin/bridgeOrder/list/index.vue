@@ -139,6 +139,16 @@
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
 <!--        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>-->
       </el-form-item>
+      <el-form-item>
+        <el-button
+          type="warning"
+          icon="el-icon-download"
+          size="mini"
+          @click="handleExport"
+          v-hasPermi="['admin/coin/export']"
+        >导出</el-button>
+      </el-form-item>
+
     </el-form>
     <el-row :gutter="10" class="mb8">
 <!--      <el-col :span="1.5">-->
@@ -176,8 +186,6 @@
       <el-table-column label="" align="center" prop="id" />
       <el-table-column label="转出币种" align="center" prop="sourceAddress" />
       <el-table-column label="转入币种" align="center" prop="targetAddress" />
-      <el-table-column label="转出钱包地址" align="center" prop="sourceCoinAddress" />
-      <el-table-column label="转入钱包地址" align="center" prop="targetCoinAddress" />
       <el-table-column label="转出链" align="center" prop="sourceChainId" :formatter="sourceChainIdFormat" width="100">
         <template slot-scope="scope">
           {{ sourceChainIdFormat(scope.row) }}
@@ -188,10 +196,17 @@
           {{ targetChainIdFormat(scope.row) }}
         </template>
       </el-table-column>
-      <el-table-column label="交易哈希" align="center" prop="transactionHash" />
-      <el-table-column label="跨链订单id" align="center" prop="orderId" />
       <el-table-column label="数量" align="center" prop="amount" />
-      <el-table-column label="跨链记录状态" align="center"  prop="status" :formatter="statusFormat" />
+      <el-table-column label="手续费" align="center" prop="fee" />
+      <el-table-column label="gas费" align="center" prop="gasFee" />
+      <el-table-column label="转入钱包地址" align="center" prop="targetCoinAddress" />
+      <el-table-column label="转出钱包地址" align="center" prop="sourceCoinAddress" />
+
+      <el-table-column label="转出TXID" align="center" prop="outHash" />
+      <el-table-column label="转入TXID" align="center" prop="inHash" />
+<!--      <el-table-column label="跨链订单id" align="center" prop="orderId" />-->
+
+      <el-table-column label="状态" align="center"  prop="status" :formatter="statusFormat" />
       <el-table-column label="发起时间" align="center" prop="createAt" width="180">
         <template slot-scope="scope">
             <span>{{ parseTime(scope.row.createAt, '{y}-{m}-{d}') }}</span>
@@ -207,7 +222,7 @@
         </span>
         </template>
       </el-table-column>
-      <el-table-column label="手续费" align="center" prop="fee" />
+
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -320,7 +335,9 @@ import {
     updateBridgeOrder,
     listChain,
     changeBridgeOrderStatus,
+    exportBridgeOrder,
 } from "@/api/admin/bridgeOrder";
+import {exportCoin} from "@/api/admin/coin";
 export default {
   components:{},
   name: "BridgeOrder",
@@ -548,7 +565,34 @@ export default {
           this.getList();
           this.msgSuccess("删除成功");
         }).catch(function() {});
+    },
+
+    /** 导出按钮操作 */
+    handleExport() {
+      const queryParams = this.queryParams;
+      this.$confirm('是否确认导出所有跨链记录?', "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(() => {
+        return exportBridgeOrder(queryParams);
+      }).then(response => {
+        this.download(response);
+      }).catch(() => {});
+    },
+
+    download(data) {
+      console.log('Received data:', data);
+      console.log('Data type:', typeof data);
+
+      const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = 'bridgeOrder.xlsx';
+      link.click();
+      window.URL.revokeObjectURL(link.href);
     }
+
   }
 };
 </script>

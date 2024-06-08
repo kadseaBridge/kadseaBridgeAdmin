@@ -8,6 +8,7 @@
 package api
 
 import (
+	"fmt"
 	"gfast/app/admin/dao"
 	"gfast/app/admin/service"
 	sysApi "gfast/app/system/api"
@@ -102,4 +103,26 @@ func (c *bridgeOrder) ChangeStatus(r *ghttp.Request) {
 	} else {
 		c.SusJsonExit(r, "状态设置成功")
 	}
+}
+
+func (c *bridgeOrder) Export(r *ghttp.Request) {
+	var req *dao.BridgeOrderSearchReq
+	//获取参数
+	if err := r.Parse(&req); err != nil {
+		c.FailJsonExit(r, err.(gvalid.Error).FirstString())
+	}
+	req.Ctx = r.GetCtx()
+	data, err := service.BridgeOrder.ExportOrders(req)
+	if err != nil {
+		r.Response.WriteJsonExit(g.Map{"error": err.Error()})
+	}
+
+	// 设置响应头以指示文件下载
+	r.Response.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	r.Response.Header().Set("Content-Disposition", `attachment; filename="coins.xlsx"`)
+	r.Response.Header().Set("Content-Length", fmt.Sprintf("%d", len(data)))
+
+	// 返回文件内容给前端
+	r.Response.Write(data)
+
 }
