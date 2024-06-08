@@ -3,7 +3,6 @@ module gfast
 require (
 	github.com/StackExchange/wmi v1.2.0 // indirect
 	github.com/casbin/casbin/v2 v2.31.9
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/goflyfox/gtoken v1.4.5
 	github.com/gogf/gcache-adapter v0.1.2
@@ -16,10 +15,12 @@ require (
 	github.com/mozillazg/go-httpheader v0.3.0 // indirect
 	github.com/mssola/user_agent v0.5.1
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
+	github.com/pquerna/otp v1.4.0
 	github.com/shirou/gopsutil v3.21.6+incompatible
+	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.27
 	github.com/tklauser/go-sysconf v0.3.7 // indirect
-	golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb // indirect
+	github.com/xuri/excelize/v2 v2.8.1
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 )
 
