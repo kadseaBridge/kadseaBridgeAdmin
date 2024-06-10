@@ -28,7 +28,7 @@
 <!--          <svg-icon slot="prefix" icon-class="validCode" class="el-input__icon input-icon" />-->
 <!--        </el-input>-->
 <!--      </el-form-item>-->
-<!--      <el-form-item prop="code">-->
+      <el-form-item prop="code">
         <el-input
           v-model="loginForm.code"
           auto-complete="off"
@@ -75,10 +75,10 @@ export default {
       codeUrl: "",
       cookiePassword: "",
       loginForm: {
-        username: "admin",
-        password: "123456",
-        // username: "",
-        // password: "",
+        // username: "admin",
+        // password: "123456",
+        username: "",
+        password: "",
         rememberMe: false,
         code: "1222",
         uuid: "",
