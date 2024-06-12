@@ -42,7 +42,7 @@ type CoinAddReq struct {
 	ChainId   string `p:"chainId" v:"required#链Id不能为空"`
 	Address   string `p:"address" v:"required#代币地址不能为空"`
 	IsEnable  int    `p:"isEnable" v:"required#是否上架不能为空"`
-	TokenType string `p:"tokenType" v:"required#币种类型不能为空"`
+	TokenType string `p:"type" v:"required#币种类型不能为空"`
 	Decimals  int    `p:"decimals" v:"required#精度不能为空"`
 	Icon      string `p:"icon" v:"required#代币图标不能为空"`
 }

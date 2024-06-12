@@ -117,6 +117,9 @@
       <el-form-item label="代币简称" prop="symbol">
            <el-input v-model="form.symbol" placeholder="请输入代币简称" />
       </el-form-item>
+      <el-form-item label="币种精度" prop="decimals" >
+        <el-input v-model="form.decimals" placeholder="请输入币种精度" />
+      </el-form-item>
       <el-form-item label="链" prop="chainId">
           <el-select v-model="form.chainId" placeholder="请选择链">
               <el-option
@@ -130,6 +133,7 @@
       <el-form-item label="代币地址" prop="address">
            <el-input v-model="form.address" placeholder="请输入代币地址" />
       </el-form-item>
+
        <el-form-item label="是否上架" prop="isEnable">
            <el-radio-group v-model="form.isEnable">
                <el-radio
