@@ -236,7 +236,7 @@ export default {
           { required: true, message: "精度不能为空", trigger: "blur" }
         ],
         icon : [
-          { required: true, message: "代币图标不能为空", trigger: "blur" }
+          { required: false, message: "代币图标不能为空", trigger: "blur" }
         ],
       }
     };
