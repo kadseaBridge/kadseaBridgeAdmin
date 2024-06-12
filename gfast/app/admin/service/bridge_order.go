@@ -86,25 +86,44 @@ func (s *bridgeOrder) GetList(req *dao.BridgeOrderSearchReq) (total, page int, o
 		if err != nil {
 			err = gerror.New("获取链名称名称失败")
 		}
+		sourceCoinName, err := Coin.GetNameByAddress(req.Ctx, order.SourceCoinAddress)
+		if err != nil {
+			err = gerror.New("获取币种名称失败")
+		}
+
+		targetCoinName, err := Coin.GetNameByAddress(req.Ctx, order.SourceCoinAddress)
+		if err != nil {
+			err = gerror.New("获取币种名称失败")
+		}
+
+		sourceChainName, err := Chain.GetNameByChainId(req.Ctx, order.SourceChainId)
+		if err != nil {
+			err = gerror.New("获取链名称名称失败")
+		}
+
+		targetChainName, err := Chain.GetNameByChainId(req.Ctx, order.TargetChainId)
+		if err != nil {
+			err = gerror.New("获取链名称名称失败")
+		}
 		rsp[i] = &model.BridgeOrderRsp{
-			Id:                order.Id,
-			SourceAddress:     order.SourceAddress,
-			TargetAddress:     order.TargetAddress,
-			SourceCoinAddress: order.SourceCoinAddress,
-			TargetCoinAddress: order.TargetCoinAddress,
-			SourceChainId:     order.SourceChainId,
-			TargetChainId:     order.TargetChainId,
-			InHash:            tx,
-			OutHash:           order.TransactionHash,
-			OrderId:           order.OrderId,
-			Amount:            order.Amount,
-			Status:            order.Status,
-			CreateAt:          order.CreateAt,
-			UpdateAt:          order.UpdateAt,
-			BlockNumber:       order.BlockNumber,
-			Fee:               order.Fee,
-			GasFee:            gas,
-			Remark:            order.Remark,
+			Id:              order.Id,
+			SourceAddress:   order.SourceAddress,
+			TargetAddress:   order.TargetAddress,
+			SourceCoinName:  sourceCoinName,
+			TargetCoinName:  targetCoinName,
+			SourceChainName: sourceChainName,
+			TargetChainName: targetChainName,
+			InHash:          tx,
+			OutHash:         order.TransactionHash,
+			OrderId:         order.OrderId,
+			Amount:          order.Amount,
+			Status:          order.Status,
+			CreateAt:        order.CreateAt,
+			UpdateAt:        order.UpdateAt,
+			BlockNumber:     order.BlockNumber,
+			Fee:             order.Fee,
+			GasFee:          gas,
+			Remark:          order.Remark,
 		}
 	}
 
@@ -188,30 +207,11 @@ func (s *bridgeOrder) ExportOrders(req *dao.BridgeOrderSearchReq) ([]byte, error
 	// 填充数据
 	for i, order := range list {
 
-		sourceName, err := Coin.GetNameByAddress(req.Ctx, order.SourceCoinAddress)
-		if err != nil {
-			err = gerror.New("获取币种名称失败")
-		}
-
-		targetName, err := Coin.GetNameByAddress(req.Ctx, order.SourceCoinAddress)
-		if err != nil {
-			err = gerror.New("获取币种名称失败")
-		}
-
-		SourceChainName, err := Chain.GetNameByChainId(req.Ctx, order.SourceChainId)
-		if err != nil {
-			err = gerror.New("获取链名称名称失败")
-		}
-
-		TargetChainName, err := Chain.GetNameByChainId(req.Ctx, order.TargetChainId)
-		if err != nil {
-			err = gerror.New("获取链名称名称失败")
-		}
 		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", i+2), order.Id)
-		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", i+2), sourceName)
-		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", i+2), targetName)
-		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", i+2), SourceChainName)
-		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", i+2), TargetChainName)
+		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", i+2), order.SourceCoinName)
+		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", i+2), order.TargetCoinName)
+		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", i+2), order.SourceChainName)
+		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", i+2), order.TargetChainName)
 		f.SetCellValue("Sheet1", fmt.Sprintf("F%d", i+2), order.Amount)
 		f.SetCellValue("Sheet1", fmt.Sprintf("G%d", i+2), order.Fee)
 		f.SetCellValue("Sheet1", fmt.Sprintf("H%d", i+2), order.GasFee)

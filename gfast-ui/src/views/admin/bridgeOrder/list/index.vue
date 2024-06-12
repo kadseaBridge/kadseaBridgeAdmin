@@ -183,24 +183,23 @@
     </el-row>
     <el-table v-loading="loading" :data="bridgeOrderList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="" align="center" prop="id" />
-      <el-table-column label="转出币种" align="center" prop="sourceAddress" />
-      <el-table-column label="转入币种" align="center" prop="targetAddress" />
-      <el-table-column label="转出链" align="center" prop="sourceChainId" :formatter="sourceChainIdFormat" width="100">
-        <template slot-scope="scope">
-          {{ sourceChainIdFormat(scope.row) }}
+<!--      <el-table-column label="" align="center" prop="id" />-->
+      <el-table-column label="序号" width="50">
+        <template v-slot="scope">
+          {{ scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="转入链" align="center" prop="targetChainId" :formatter="targetChainIdFormat" width="100">
-        <template slot-scope="scope">
-          {{ targetChainIdFormat(scope.row) }}
-        </template>
-      </el-table-column>
+      <el-table-column label="转出币种" align="center" prop="sourceCoinName" />
+      <el-table-column label="转入币种" align="center" prop="targetCoinName" />
+      <el-table-column label="转出链" align="center" prop="sourceChainName" />
+
+      <el-table-column label="转入链" align="center" prop="targetChainName" />
+
       <el-table-column label="数量" align="center" prop="amount" />
       <el-table-column label="手续费" align="center" prop="fee" />
       <el-table-column label="gas费" align="center" prop="gasFee" />
-      <el-table-column label="转入钱包地址" align="center" prop="targetCoinAddress" />
-      <el-table-column label="转出钱包地址" align="center" prop="sourceCoinAddress" />
+      <el-table-column label="转入钱包地址" align="center" prop="targetAddress" />
+      <el-table-column label="转出钱包地址" align="center" prop="sourceAddress" />
 
       <el-table-column label="转出TXID" align="center" prop="outHash" />
       <el-table-column label="转入TXID" align="center" prop="inHash" />
