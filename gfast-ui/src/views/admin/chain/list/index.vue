@@ -57,13 +57,12 @@
       <el-table-column label="链名" align="center" prop="name" />
       <el-table-column label="链Id" align="center" prop="chainId" />
       <el-table-column label="链rpc" align="center" prop="rpc" />
-      <el-table-column label="状态" align="center" prop="isEnable" :formatter="isEnableFormat" />
       <el-table-column label="链类型" align="center" prop="type" :formatter="typeFormat" />
-      <el-table-column label="链图标" align="center" prop="icon" />
-<!--      "支付时，该公链最大接受的gasprice,如果超过则不进行目标链支付,为0时， 为0时，所有订单都不进行支付， 如果想要所有的订单都进行支付，不管gasprice 则设置很大   单位：wei"-->
+      <el-table-column label="跨链桥合约地址" align="center" prop="bridgeContractAddress"  />
       <el-table-column label="maxGasPrice" align="center" prop="maxGasPrice" />
       <el-table-column label="enablePay" align="center" prop="enablePay" />
-      <el-table-column label="跨链桥合约地址" align="center" prop="bridgeContractAddress"  />
+      <el-table-column label="链图标" align="center" prop="icon" />
+      <el-table-column label="状态" align="center" prop="isEnable" :formatter="isEnableFormat" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
