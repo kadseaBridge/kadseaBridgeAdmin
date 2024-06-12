@@ -29,7 +29,7 @@ var (
 
 // Fill with you ideas below.
 
-//通过用户名获取用户信息
+// 通过用户名获取用户信息
 func (d *sysUserDao) FindByUsername(ctx context.Context, username string) (user *model.LoginUserRes, err error) {
 	user = &model.LoginUserRes{}
 	err = d.Ctx(ctx).Fields(user).Where(d.Columns.UserName, username).Scan(user)
@@ -40,7 +40,17 @@ func (d *sysUserDao) FindByUsername(ctx context.Context, username string) (user 
 	return
 }
 
-//更新用户登陆信息
+func (d *sysUserDao) FindByUserId(ctx context.Context, userid uint64) (user *model.LoginUserRes, err error) {
+	user = &model.LoginUserRes{}
+	err = d.Ctx(ctx).Fields(user).Where(d.Columns.Id, userid).Scan(user)
+	if err != nil {
+		g.Log().Error(err)
+		err = gerror.New("获取用户信息失败")
+	}
+	return
+}
+
+// 更新用户登陆信息
 func (d *sysUserDao) UpLoginInfo(id uint64, ip string) {
 	_, err := d.WherePri(id).Unscoped().Update(g.Map{
 		d.Columns.LastLoginIp:   ip,
