@@ -1,6 +1,6 @@
 // ==========================================================================
 // GFast自动生成dao操作代码，无需手动修改，重新生成不会自动覆盖.
-// 生成日期：2024-05-30 18:31:15
+// 生成日期：2024-06-12 23:29:47
 // 生成路径: gfast/app/admin/dao/chain.go
 // 生成人：jimmy
 // ==========================================================================
@@ -30,35 +30,41 @@ var (
 
 // ChainSearchReq 分页请求参数
 type ChainSearchReq struct {
-	Name     string `p:"name"`     //链名称
-	ChainId  string `p:"chainId"`  //链id
-	IsEnable string `p:"isEnable"` //是否启用
+	Name string `p:"name"` //链名
 	comModel.PageReq
 }
 
 // ChainAddReq 添加操作请求参数
 type ChainAddReq struct {
-	Name      string      `p:"name" v:"required#链名称不能为空"`
-	ChainId   string      `p:"chainId" v:"required#链id不能为空"`
-	Rpc       string      `p:"rpc" v:"required#rpc链接不能为空"`
-	Explorer  string      `p:"explorer" v:"required#浏览器链接不能为空"`
-	IsEnable  int         `p:"isEnable" v:"required#是否启用不能为空"`
-	CreateAt  *gtime.Time `p:"createAt" `
-	UpdateAt  *gtime.Time `p:"updateAt" `
-	ChainType int         `p:"type" v:"required#0 ethereum 1 tron  2 btc不能为空"`
-	Icon      string      `p:"icon" `
+	Name                  string      `p:"name" v:"required#链名不能为空"`
+	ChainId               string      `p:"chainId" v:"required#链Id不能为空"`
+	Rpc                   string      `p:"rpc" v:"required#链rpc不能为空"`
+	Explorer              string      `p:"explorer" `
+	IsEnable              int         `p:"isEnable" v:"required#状态不能为空"`
+	CreateAt              *gtime.Time `p:"createAt" `
+	UpdateAt              *gtime.Time `p:"updateAt" `
+	ChainType             int         `p:"type" v:"required#0 ethereum 1 tron  2 btc不能为空"`
+	Icon                  string      `p:"icon" `
+	IsDelete              int         `p:"isDelete" `
+	MaxGasPrice           float64     `p:"maxGasPrice" v:"required#支付时，该公链最大接受的gasprice,如果超过则不进行目标链支付,为0时， 为0时，所有订单都不进行支付， 如果想要所有的订单都进行支付，不管gasprice 则设置很大   单位：wei不能为空"`
+	EnablePay             int         `p:"enablePay" v:"required#该公链作为目标时，是否允许支付不能为空"`
+	BridgeContractAddress string      `p:"bridgeContractAddress" v:"required#跨链桥合约地址不能为空"`
 }
 
 // ChainEditReq 修改操作请求参数
 type ChainEditReq struct {
-	Id        int64       `p:"id" v:"required#主键ID不能为空"`
-	Name      string      `p:"name" v:"required#链名称不能为空"`
-	ChainId   string      `p:"chainId" v:"required#链id不能为空"`
-	Rpc       string      `p:"rpc" v:"required#rpc链接不能为空"`
-	Explorer  string      `p:"explorer" v:"required#浏览器链接不能为空"`
-	IsEnable  int         `p:"isEnable" v:"required#是否启用不能为空"`
-	CreateAt  *gtime.Time `p:"createAt" `
-	UpdateAt  *gtime.Time `p:"updateAt" `
-	ChainType int         `p:"type" v:"required#0 ethereum 1 tron  2 btc不能为空"`
-	Icon      string      `p:"icon" `
+	Id                    int64       `p:"id" v:"required#主键ID不能为空"`
+	Name                  string      `p:"name" v:"required#链名不能为空"`
+	ChainId               string      `p:"chainId" v:"required#链Id不能为空"`
+	Rpc                   string      `p:"rpc" v:"required#链rpc不能为空"`
+	Explorer              string      `p:"explorer" `
+	IsEnable              int         `p:"isEnable" v:"required#状态不能为空"`
+	CreateAt              *gtime.Time `p:"createAt" `
+	UpdateAt              *gtime.Time `p:"updateAt" `
+	ChainType             int         `p:"type" v:"required#0 ethereum 1 tron  2 btc不能为空"`
+	Icon                  string      `p:"icon" `
+	IsDelete              int         `p:"isDelete" `
+	MaxGasPrice           float64     `p:"maxGasPrice" v:"required#支付时，该公链最大接受的gasprice,如果超过则不进行目标链支付,为0时， 为0时，所有订单都不进行支付， 如果想要所有的订单都进行支付，不管gasprice 则设置很大   单位：wei不能为空"`
+	EnablePay             int         `p:"enablePay" v:"required#该公链作为目标时，是否允许支付不能为空"`
+	BridgeContractAddress string      `p:"bridgeContractAddress" v:"required#跨链桥合约地址不能为空"`
 }

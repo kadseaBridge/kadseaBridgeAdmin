@@ -1,39 +1,20 @@
 <template>
   <div class="app-container">
-<!--    <el-form :model="queryParams" ref="queryForm" :inline="true" label-width="68px">-->
-<!--      <el-form-item label="链名称" prop="name">-->
-<!--        <el-input-->
-<!--            v-model="queryParams.name"-->
-<!--            placeholder="请输入链名称"-->
-<!--            clearable-->
-<!--            size="small"-->
-<!--            @keyup.enter.native="handleQuery"-->
-<!--        />-->
-<!--      </el-form-item>-->
-<!--      <el-form-item label="链id" prop="chainId">-->
-<!--        <el-input-->
-<!--            v-model="queryParams.chainId"-->
-<!--            placeholder="请输入链id"-->
-<!--            clearable-->
-<!--            size="small"-->
-<!--            @keyup.enter.native="handleQuery"-->
-<!--        />-->
-<!--      </el-form-item>-->
-<!--      <el-form-item label="是否启用" prop="isEnable">-->
-<!--        <el-select v-model="queryParams.isEnable" placeholder="请选择是否启用" clearable size="small">-->
-<!--            <el-option-->
-<!--                v-for="dict in isEnableOptions"-->
-<!--                :key="dict.key"-->
-<!--                :label="dict.value"-->
-<!--                :value="dict.key"-->
-<!--            />-->
-<!--        </el-select>-->
-<!--      </el-form-item>-->
-<!--      <el-form-item>-->
-<!--        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>-->
+    <el-form :model="queryParams" ref="queryForm" :inline="true" label-width="68px">
+      <el-form-item label="链名" prop="name">
+        <el-input
+            v-model="queryParams.name"
+            placeholder="请输入链名"
+            clearable
+            size="small"
+            @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
 <!--        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>-->
-<!--      </el-form-item>-->
-<!--    </el-form>-->
+      </el-form-item>
+    </el-form>
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
@@ -67,11 +48,22 @@
     </el-row>
     <el-table v-loading="loading" :data="chainList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="" align="center" prop="id" />
-      <el-table-column label="链名称" align="center" prop="name" />
-      <el-table-column label="链id" align="center" prop="chainId" />
-      <el-table-column label="是否启用" align="center" prop="isEnable" :formatter="isEnableFormat" />
-      <el-table-column label="链类型" align="center" prop="chainType" :formatter="chainTypeFormat" />
+<!--      <el-table-column label="" align="center" prop="id" />-->
+      <el-table-column label="序号" width="50">
+        <template v-slot="scope">
+          {{ scope.$index + 1 }}
+        </template>
+      </el-table-column>
+      <el-table-column label="链名" align="center" prop="name" />
+      <el-table-column label="链Id" align="center" prop="chainId" />
+      <el-table-column label="链rpc" align="center" prop="rpc" />
+      <el-table-column label="状态" align="center" prop="isEnable" :formatter="isEnableFormat" />
+      <el-table-column label="链类型" align="center" prop="type" :formatter="typeFormat" />
+      <el-table-column label="链图标" align="center" prop="icon" />
+<!--      "支付时，该公链最大接受的gasprice,如果超过则不进行目标链支付,为0时， 为0时，所有订单都不进行支付， 如果想要所有的订单都进行支付，不管gasprice 则设置很大   单位：wei"-->
+      <el-table-column label="maxGasPrice" align="center" prop="maxGasPrice" />
+      <el-table-column label="enablePay" align="center" prop="enablePay" />
+      <el-table-column label="跨链桥合约地址" align="center" prop="bridgeContractAddress"  />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -98,23 +90,23 @@
       :limit.sync="queryParams.pageSize"
       @pagination="getList"
     />
-    <!-- 添加或修改链对话框 -->
+    <!-- 添加或修改链管理对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body :close-on-click-modal="false">
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-      <el-form-item label="链名称" prop="name">
-           <el-input v-model="form.name" placeholder="请输入链名称" />
+      <el-form-item label="链名" prop="name">
+           <el-input v-model="form.name" placeholder="请输入链名" />
       </el-form-item>
-      <el-form-item label="链id" prop="chainId">
-           <el-input v-model="form.chainId" placeholder="请输入链id" />
+      <el-form-item label="链Id" prop="chainId">
+           <el-input v-model="form.chainId" placeholder="请输入链Id" />
       </el-form-item>
-      <el-form-item label="rpc链接" prop="rpc">
-           <el-input v-model="form.rpc" placeholder="请输入rpc链接" />
+      <el-form-item label="链rpc" prop="rpc">
+           <el-input v-model="form.rpc" placeholder="请输入链rpc" />
       </el-form-item>
-      <el-form-item label="浏览器链接" prop="explorer">
-           <el-input v-model="form.explorer" placeholder="请输入浏览器链接" />
+      <el-form-item label="链浏览器地址" prop="explorer">
+           <el-input v-model="form.explorer" placeholder="请输入链浏览器地址" />
       </el-form-item>
-      <el-form-item label="是否启用" prop="isEnable">
-          <el-select v-model="form.isEnable" placeholder="请选择是否启用">
+      <el-form-item label="状态" prop="isEnable">
+          <el-select v-model="form.isEnable" placeholder="请选择状态">
               <el-option
                   v-for="dict in isEnableOptions"
                   :key="dict.key"
@@ -123,34 +115,62 @@
               ></el-option>
           </el-select>
       </el-form-item>
-<!--       <el-form-item label="" prop="createAt">-->
+<!--       <el-form-item label="创建时间" prop="createAt">-->
 <!--           <el-date-picker clearable size="small" style="width: 200px"-->
 <!--               v-model="form.createAt"-->
 <!--               type="date"-->
 <!--               value-format="yyyy-MM-dd"-->
-<!--               placeholder="选择">-->
+<!--               placeholder="选择创建时间">-->
 <!--           </el-date-picker>-->
 <!--       </el-form-item>-->
-<!--       <el-form-item label="" prop="updateAt">-->
+<!--       <el-form-item label="更新时间" prop="updateAt">-->
 <!--           <el-date-picker clearable size="small" style="width: 200px"-->
 <!--               v-model="form.updateAt"-->
 <!--               type="date"-->
 <!--               value-format="yyyy-MM-dd"-->
-<!--               placeholder="选择">-->
+<!--               placeholder="选择更新时间">-->
 <!--           </el-date-picker>-->
 <!--       </el-form-item>-->
-      <el-form-item label="链类型" prop="chainType">
-          <el-select v-model="form.chainType" placeholder="请选择链类型">
+      <el-form-item label="链类型" prop="type">
+          <el-select v-model="form.type" placeholder="链类型">
               <el-option
-                  v-for="dict in chainTypeOptions"
+                  v-for="dict in typeOptions"
                   :key="dict.key"
                   :label="dict.value"
                       :value="dict.key"
               ></el-option>
           </el-select>
       </el-form-item>
-      <el-form-item label="图标" prop="icon">
-           <el-input v-model="form.icon" placeholder="请输入图标" />
+      <el-form-item label="链图标" prop="icon">
+           <el-input v-model="form.icon" placeholder="请输入链图标" />
+      </el-form-item>
+      <el-form-item label="软删除" prop="isDelete">
+          <el-select v-model="form.isDelete" placeholder="请选择软删除">
+              <el-option
+                  v-for="dict in isDeleteOptions"
+                  :key="dict.key"
+                  :label="dict.value"
+                      :value="dict.key"
+              ></el-option>
+          </el-select>
+      </el-form-item>
+<!--      <el-form-item label="maxGasPrice" prop="maxGasPrice">-->
+<!--           <el-input v-model="form.maxGasPrice" placeholder="请输入支付时，该公链最大接受的gasprice,如果超过则不进行目标链支付,为0时， 为0时，所有订单都不进行支付， 如果想要所有的订单都进行支付，不管gasprice 则设置很大   单位：wei" />-->
+<!--      </el-form-item>-->
+
+        <el-form-item label="最大接受的gasprice" prop="maxGasPrice" label-width="150px">
+          <el-tooltip
+            content="请输入支付时，该公链最大接受的gasprice,如果超过则不进行目标链支付,为0时，所有订单都不进行支付，如果想要所有的订单都进行支付，不管gasprice 则设置很大。单位：wei"
+            placement="top"
+          >
+            <el-input v-model="form.maxGasPrice" placeholder="请输入支付时，最大接受的gasprice" />
+          </el-tooltip>
+        </el-form-item>
+      <el-form-item label="enablePay" prop="enablePay" label-width="130px">
+           <el-input v-model="form.enablePay" placeholder="enablePay" />
+      </el-form-item>
+      <el-form-item label="跨链桥合约地址" prop="bridgeContractAddress" label-width="130px">
+           <el-input v-model="form.bridgeContractAddress"  placeholder="请输入跨链桥合约地址" />
       </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -183,7 +203,7 @@ export default {
       multiple: true,
       // 总条数
       total: 0,
-      // 链表格数据
+      // 链管理表格数据
       chainList: [],
       // 弹出层标题
       title: "",
@@ -191,37 +211,43 @@ export default {
       open: false,
       // isEnableOptions字典数据
       isEnableOptions: [],
-      // chainTypeOptions字典数据
-      chainTypeOptions: [],
+      // typeOptions字典数据
+      typeOptions: [],
+      // isDeleteOptions字典数据
+      isDeleteOptions: [],
       // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
         name: undefined,
-        chainId: undefined,
-        isEnable: undefined,
       },
       // 表单参数
       form: {},
       // 表单校验
       rules: {
         name : [
-          { required: true, message: "链名称不能为空", trigger: "blur" }
+          { required: true, message: "链名不能为空", trigger: "blur" }
         ],
         chainId : [
-          { required: true, message: "链id不能为空", trigger: "blur" }
+          { required: true, message: "链Id不能为空", trigger: "blur" }
         ],
         rpc : [
-          { required: true, message: "rpc链接不能为空", trigger: "blur" }
-        ],
-        explorer : [
-          { required: true, message: "浏览器链接不能为空", trigger: "blur" }
+          { required: true, message: "链rpc不能为空", trigger: "blur" }
         ],
         isEnable : [
-          { required: true, message: "是否启用不能为空", trigger: "blur" }
+          { required: true, message: "状态不能为空", trigger: "blur" }
         ],
-        chainType : [
-          { required: true, message: "0 ethereum 1 tron  2 btc不能为空", trigger: "blur" }
+        type : [
+          { required: true, message: "链类型", trigger: "blur" }
+        ],
+        maxGasPrice : [
+          { required: true, message: "支付时，该公链最大接受的gasprice,如果超过则不进行目标链支付,为0时， 为0时，所有订单都不进行支付， 如果想要所有的订单都进行支付，不管gasprice 则设置很大   单位：wei不能为空", trigger: "blur" }
+        ],
+        enablePay : [
+          { required: true, message: "该公链作为目标时，是否允许支付不能为空", trigger: "blur" }
+        ],
+        bridgeContractAddress : [
+          { required: true, message: "跨链桥合约地址不能为空", trigger: "blur" }
         ],
       }
     };
@@ -231,12 +257,15 @@ export default {
       this.isEnableOptions = response.data.values||[];
     });
     this.getDicts("chain_type").then(response => {
-      this.chainTypeOptions = response.data.values||[];
+      this.typeOptions = response.data.values||[];
+    });
+    this.getDicts("isDelete").then(response => {
+      this.isDeleteOptions = response.data.values||[];
     });
     this.getList();
   },
   methods: {
-    /** 查询链列表 */
+    /** 查询链管理列表 */
     getList() {
       this.loading = true;
       listChain(this.queryParams).then(response => {
@@ -245,13 +274,17 @@ export default {
         this.loading = false;
       });
     },
-    // 是否启用字典翻译
+    // 状态字典翻译
     isEnableFormat(row, column) {
       return this.selectDictLabel(this.isEnableOptions, row.isEnable);
     },
     // 0 ethereum 1 tron  2 btc字典翻译
-    chainTypeFormat(row, column) {
-      return this.selectDictLabel(this.chainTypeOptions, row.chainType);
+    typeFormat(row, column) {
+      return this.selectDictLabel(this.typeOptions, row.type);
+    },
+    // 软删除字典翻译
+    isDeleteFormat(row, column) {
+      return this.selectDictLabel(this.isDeleteOptions, row.isDelete);
     },
     // 取消按钮
     cancel() {
@@ -269,8 +302,12 @@ export default {
         isEnable: undefined,
         createAt: undefined,
         updateAt: undefined,
-        chainType: undefined,
+        type: undefined,
         icon: undefined,
+        isDelete: undefined,
+        maxGasPrice: undefined,
+        enablePay: undefined,
+        bridgeContractAddress: undefined,
       };
       this.resetForm("form");
     },
@@ -303,10 +340,11 @@ export default {
       getChain(id).then(response => {
         let data = response.data;
         data.isEnable = ''+data.isEnable
-        data.chainType = ''+data.chainType
+        data.type = ''+data.type
+        data.isDelete = ''+data.isDelete
         this.form = data;
         this.open = true;
-        this.title = "修改链";
+        this.title = "修改链管理";
       });
     },
     /** 提交按钮 */
@@ -340,7 +378,7 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const ids = row.id || this.ids;
-      this.$confirm('是否确认删除链编号为"' + ids + '"的数据项?', "警告", {
+      this.$confirm('是否确认删除链管理编号为"' + ids + '"的数据项?', "警告", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"

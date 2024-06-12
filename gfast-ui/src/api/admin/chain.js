@@ -1,5 +1,5 @@
 import request from '@/utils/request'
-// 查询链列表
+// 查询链管理列表
 export function listChain(query) {
   return request({
     url: '/admin/chain/list',
@@ -7,7 +7,7 @@ export function listChain(query) {
     params: query
   })
 }
-// 查询链详细
+// 查询链管理详细
 export function getChain(id) {
   return request({
     url: '/admin/chain/get',
@@ -17,7 +17,7 @@ export function getChain(id) {
     }
   })
 }
-// 新增链
+// 新增链管理
 export function addChain(data) {
   return request({
     url: '/admin/chain/add',
@@ -25,7 +25,7 @@ export function addChain(data) {
     data: data
   })
 }
-// 修改链
+// 修改链管理
 export function updateChain(data) {
   return request({
     url: '/admin/chain/edit',
@@ -33,7 +33,7 @@ export function updateChain(data) {
     data: data
   })
 }
-// 删除链
+// 删除链管理
 export function delChain(ids) {
   return request({
     url: '/admin/chain/delete',

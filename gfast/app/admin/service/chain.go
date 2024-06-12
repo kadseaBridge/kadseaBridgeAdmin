@@ -1,6 +1,6 @@
 // ==========================================================================
 // GFast自动生成业务逻辑层相关代码，只生成一次，按需修改,再次生成不会覆盖.
-// 生成日期：2024-05-30 18:31:15
+// 生成日期：2024-06-12 23:29:47
 // 生成路径: gfast/app/admin/service/chain.go
 // 生成人：jimmy
 // ==========================================================================
@@ -26,12 +26,6 @@ func (s *chain) GetList(req *dao.ChainSearchReq) (total, page int, list []*model
 	m := dao.Chain.Ctx(req.Ctx)
 	if req.Name != "" {
 		m = m.Where(dao.Chain.Columns.Name+" like ?", "%"+req.Name+"%")
-	}
-	if req.ChainId != "" {
-		m = m.Where(dao.Chain.Columns.ChainId+" = ?", req.ChainId)
-	}
-	if req.IsEnable != "" {
-		m = m.Where(dao.Chain.Columns.IsEnable+" = ?", req.IsEnable)
 	}
 	total, err = m.Count()
 	if err != nil {
