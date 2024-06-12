@@ -44,7 +44,7 @@ type CoinAddReq struct {
 	IsEnable  int    `p:"isEnable" v:"required#是否上架不能为空"`
 	TokenType string `p:"type" v:"required#币种类型不能为空"`
 	Decimals  int    `p:"decimals" v:"required#精度不能为空"`
-	Icon      string `p:"icon" v:"required#代币图标不能为空"`
+	Icon      string `p:"icon"`
 }
 
 // CoinEditReq 修改操作请求参数
@@ -57,5 +57,5 @@ type CoinEditReq struct {
 	IsEnable  int    `p:"isEnable" v:"required#是否上架不能为空"`
 	TokenType string `p:"tokenType" v:"required#币种类型不能为空"`
 	Decimals  int    `p:"decimals" v:"required#精度不能为空"`
-	Icon      string `p:"icon" v:"required#代币图标不能为空"`
+	Icon      string `p:"icon"`
 }
