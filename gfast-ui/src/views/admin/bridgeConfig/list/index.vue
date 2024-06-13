@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" label-width="68px">
         <el-form-item label="当前链" prop="sourceChainId">
-          <el-select v-model="queryParams.sourceChainId" placeholder="请选择当前链" clearable size="small">
+          <el-select v-model="queryParams.sourceChainId" placeholder="请选择当前链" clearable size="small"  @change="onSourceChainChange">
               <el-option
                   v-for="item in sourceChainIdOptions"
                   :key="item.key"
@@ -12,9 +12,9 @@
           </el-select>
         </el-form-item>
         <el-form-item label="币种" prop="sourceCoinAddress">
-          <el-select v-model="queryParams.sourceCoinAddress" placeholder="请选择币种" clearable size="small">
+          <el-select v-model="queryParams.sourceCoinAddress" placeholder="请选择币种" clearable size="small" @change="onSourceCoinChange">
               <el-option
-                  v-for="item in sourceCoinAddressOptions"
+                  v-for="item in filteredCoinOptions"
                   :key="item.key"
                   :label="item.value"
                   :value="item.key"
@@ -45,26 +45,7 @@
           v-hasPermi="['admin/coin/export']"
         >导出</el-button>
       </el-col>
-<!--      <el-col :span="1.5">-->
-<!--        <el-button-->
-<!--          type="success"-->
-<!--          icon="el-icon-edit"-->
-<!--          size="mini"-->
-<!--          :disabled="single"-->
-<!--          @click="handleUpdate"-->
-<!--          v-hasPermi="['admin/bridgeConfig/edit']"-->
-<!--        >修改</el-button>-->
-<!--      </el-col>-->
-<!--      <el-col :span="1.5">-->
-<!--        <el-button-->
-<!--          type="danger"-->
-<!--          icon="el-icon-delete"-->
-<!--          size="mini"-->
-<!--          :disabled="multiple"-->
-<!--          @click="handleDelete"-->
-<!--          v-hasPermi="['admin/bridgeConfig/delete']"-->
-<!--        >删除</el-button>-->
-<!--      </el-col>-->
+
     </el-row>
     <el-table v-loading="loading" :data="bridgeConfigList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
@@ -131,7 +112,7 @@
     <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body :close-on-click-modal="false">
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
       <el-form-item label="当前链" prop="sourceChainId">
-          <el-select v-model="form.sourceChainId" placeholder="请选择当前链">
+          <el-select v-model="form.sourceChainId" placeholder="请选择当前链"  @change="onSourceChainChangeDialog">
               <el-option
                   v-for="item in sourceChainIdOptions"
                   :key="item.key"
@@ -141,19 +122,19 @@
           </el-select>
       </el-form-item>
       <el-form-item label="币种" prop="sourceCoinAddress">
-          <el-select v-model="form.sourceCoinAddress" placeholder="请选择币种">
+          <el-select v-model="form.sourceCoinAddress" placeholder="请选择币种" @change="onSourceCoinChangeDialog">
               <el-option
-                  v-for="item in sourceCoinAddressOptions"
+                  v-for="item in filteredCoinOptionsDialog"
                   :key="item.key"
                   :label="item.value"
-                  :value="item.key"
+                  :value="item.value"
               ></el-option>
           </el-select>
       </el-form-item>
       <el-form-item label="对手链" prop="targetChainId">
           <el-select v-model="form.targetChainId" placeholder="请选择对手链">
               <el-option
-                  v-for="item in targetChainIdOptions"
+                  v-for="item in filteredTargetChainOptionsDialog"
                   :key="item.key"
                   :label="item.value"
                   :value="item.key"
@@ -234,6 +215,12 @@ export default {
       sourceCoinAddressOptions: [],
       // isEnableOptions字典数据
       isEnableOptions: [],
+
+      filteredCoinOptions: [],
+      filteredCoinOptionsDialog: [],
+      filteredTargetChainOptionsDialog: [],
+      filteredTargetChainOptions:[],
+
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -269,15 +256,14 @@ export default {
         isEnable : [
           { required: true, message: "状态不能为空", trigger: "blur" }
         ],
-        targetCoinAddress : [
-          { required: true, message: "目标链合约地址不能为空", trigger: "blur" }
-        ],
+        // targetCoinAddress : [
+        //   { required: true, message: "目标链合约地址不能为空", trigger: "blur" }
+        // ],
       }
     };
   },
   created() {
-    this.getChainItems1()
-    this.getChainItems2()
+    this.getChainItems()
     this.getCoinItems()
     this.getDicts("is_enable").then(response => {
       this.isEnableOptions = response.data.values||[];
@@ -286,26 +272,38 @@ export default {
   },
   methods: {
     //关联chain表选项
-    getChainItems1() {
+    getChainItems() {
       this.getItems(listChain, {pageSize:10000}).then(res => {
         this.sourceChainIdOptions = this.setItems(res, 'chainId', 'name')
+        this.targetChainIdOptions = this.sourceChainIdOptions
       })
-    },
-    //关联chain表选项
-    getChainItems2() {
-      this.getItems(listChain, {pageSize:10000}).then(res => {
-        this.targetChainIdOptions = this.setItems(res, 'chainId', 'name')
-      })
+      console.log('Coin items response:', this.sourceChainIdOptions);
     },
 
+    // calculateTotalFee(row) {
+    //   return row.feeFixed + row.feePercent;
+    // },
+
     calculateTotalFee(row) {
-      return row.feeFixed + row.feePercent;
+      return `${row.feePercent}% + ${row.feeFixed}`;
     },
     //关联coin表选项
+
     getCoinItems() {
-      this.getItems(listCoin, {pageSize:10000}).then(res => {
-        this.sourceCoinAddressOptions = this.setItems(res, 'address', 'symbol')
-      })
+      this.getItems(listCoin, { pageSize: 10000 }).then(res => {
+        console.log('Coin items response:', res);
+        if (res && res.data && res.data.list) {
+          this.sourceCoinAddressOptions = res.data.list.map(item => ({
+            key: item.address,
+            value: item.symbol,
+            chainId: item.chainId // 确保每个币种有chainId字段
+          }));
+        } else {
+          console.error('Invalid coin items response:', res);
+        }
+      }).catch(error => {
+        console.error('Error fetching coin items:', error);
+      });
     },
     /** 查询跨链币对列表 */
     getList() {
@@ -349,22 +347,51 @@ export default {
         dayTotal: undefined,
         onceTotal: undefined,
         isEnable: "0" ,
-        targetCoinAddress: undefined,
+        // targetCoinAddress: undefined,
         updateAt: undefined,
         createAt: undefined,
       };
       this.resetForm("form");
     },
+
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1;
       this.getList();
     },
-    /** 重置按钮操作 */
-    resetQuery() {
-      this.resetForm("queryForm");
-      this.handleQuery();
+    // 当前链选择变化
+    onSourceChainChange(value) {
+      this.filteredCoinOptions = this.sourceCoinAddressOptions.filter(item => item.chainId === value);
+      this.queryParams.sourceCoinAddress = undefined; // 重置币种选择框
+      this.filteredTargetChainOptions = []; // 重置对手链选择框
+      this.queryParams.targetChainId = undefined; // 重置对手链选择框
     },
+    // 币种选择变化
+    onSourceCoinChange(value) {
+      this.filteredTargetChainOptions = this.sourceCoinAddressOptions.filter(item => item.value.includes(value));
+      this.queryParams.targetChainId = undefined; // 重置对手链选择框
+    },
+    // 当前链选择变化（对话框）
+    onSourceChainChangeDialog(value) {
+      this.filteredCoinOptionsDialog = this.sourceCoinAddressOptions.filter(item => item.chainId === value);
+      this.form.sourceCoinAddress = undefined; // 重置币种选择框
+      this.filteredTargetChainOptionsDialog = []; // 重置对手链选择框
+      this.form.targetChainId = undefined; // 重置对手链选择框
+    },
+
+    // 币种选择变化（对话框）
+    onSourceCoinChangeDialog(value) {
+      const filteredCoinRecords = this.sourceCoinAddressOptions.filter(item => item.value.includes(value));
+      const chainIds = filteredCoinRecords.map(item => item.chainId);
+      this.filteredTargetChainOptionsDialog = this.sourceChainIdOptions.filter(option => chainIds.includes(option.key) && option.key !== this.form.sourceChainId);
+      this.form.targetChainId = undefined; // 重置对手链选择框
+    },
+
+    /** 重置按钮操作 */
+    // resetQuery() {
+    //   this.resetForm("queryForm");
+    //   this.handleQuery();
+    // },
     // 多选框选中数据
     handleSelectionChange(selection) {
       this.ids = selection.map(item => item.id)

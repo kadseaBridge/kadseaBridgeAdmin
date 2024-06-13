@@ -44,7 +44,7 @@ type BridgeConfigAddReq struct {
 	DayTotal          float64 `p:"dayTotal" v:"required#跨入每日审核数量不能为空"`
 	OnceTotal         float64 `p:"onceTotal" v:"required#跨入单次审核数量不能为空"`
 	IsEnable          int     `p:"isEnable" v:"required#状态不能为空"`
-	TargetCoinAddress string  `p:"targetCoinAddress" v:"required#目标链合约地址不能为空"`
+	TargetCoinAddress string  `p:"targetCoinAddress"`
 }
 
 // BridgeConfigEditReq 修改操作请求参数
@@ -58,5 +58,5 @@ type BridgeConfigEditReq struct {
 	DayTotal          float64 `p:"dayTotal" v:"required#跨入每日审核数量不能为空"`
 	OnceTotal         float64 `p:"onceTotal" v:"required#跨入单次审核数量不能为空"`
 	IsEnable          int     `p:"isEnable" v:"required#状态不能为空"`
-	TargetCoinAddress string  `p:"targetCoinAddress" v:"required#目标链合约地址不能为空"`
+	TargetCoinAddress string  `p:"targetCoinAddress"`
 }

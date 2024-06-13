@@ -50,6 +50,12 @@ func (c *bridgeConfig) Add(r *ghttp.Request) {
 	if err := r.Parse(&req); err != nil {
 		c.FailJsonExit(r, err.(gvalid.Error).FirstString())
 	}
+
+	// TargetChainId SourceCoinAddress
+	//if req.TargetCoinAddress == "" {
+	//
+	//}
+
 	err := service.BridgeConfig.Add(r.GetCtx(), req)
 	if err != nil {
 		c.FailJsonExit(r, err.Error())
