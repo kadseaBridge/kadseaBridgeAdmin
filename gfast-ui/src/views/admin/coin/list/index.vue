@@ -67,21 +67,22 @@
     </el-row>
     <el-table v-loading="loading" :data="coinList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <!-- <el-table-column label="" align="center" prop="id" />       -->
+<!--       <el-table-column label="" align="center" prop="id" />-->
       <el-table-column label="序号" width="50">
         <template v-slot="scope">
           {{ scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="代币简称" align="center" prop="symbol" />
+      <el-table-column label="币种" align="center" prop="symbol" />
       <el-table-column label="链" align="center" prop="chainId" :formatter="chainIdFormat" width="100">
         <template slot-scope="scope">
           {{ chainIdFormat(scope.row) }}
         </template>
       </el-table-column>
-      <el-table-column label="代币地址" align="center" prop="address" />
       <el-table-column label="精度" align="center" prop="decimals" />
-      <el-table-column label="代币图标" align="center" prop="icon" />
+      <el-table-column label="合约地址" align="center" prop="address" />
+
+      <el-table-column label="图标" align="center" prop="icon" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -131,7 +132,7 @@
           </el-select>
       </el-form-item>
       <el-form-item label="代币地址" prop="address">
-           <el-input v-model="form.address" placeholder="请输入代币地址" />
+           <el-input v-model="form.address" placeholder="请输入代币地址,如为空则表示公链原生币" />
       </el-form-item>
 
        <el-form-item label="是否上架" prop="isEnable">
@@ -224,7 +225,7 @@ export default {
           { required: true, message: "链不能为空", trigger: "blur" }
         ],
         address : [
-          { required: true, message: "代币地址不能为空", trigger: "blur" }
+          {  message: "代币地址为空则为公链原生币", trigger: "blur" }
         ],
         isEnable : [
           { required: true, message: "是否上架不能为空", trigger: "blur" }
@@ -367,8 +368,9 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
+      // '是否确认删除币种管理编号为"' + ids + '"的数据项?', "警告",
       const ids = row.id || this.ids;
-      this.$confirm('是否确认删除币种管理编号为"' + ids + '"的数据项?', "警告", {
+      this.$confirm('是否确认删除该币种?', "警告", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"

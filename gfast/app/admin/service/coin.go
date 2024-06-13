@@ -28,13 +28,14 @@ var Coin = new(coin)
 func (s *coin) GetList(req *dao.CoinSearchReq) (total, page int, list []*model.Coin, err error) {
 	m := dao.Coin.Ctx(req.Ctx)
 	if req.Symbol != "" {
-		m = m.Where(dao.Coin.Columns.Symbol+" = ?", req.Symbol)
+		m = m.Where(dao.Coin.Columns.Symbol+" LIKE ?", "%"+req.Symbol+"%")
 	}
 	if req.ChainId != "" {
 		m = m.Where(dao.Coin.Columns.ChainId+" = ?", req.ChainId)
 	}
+	// dao.Coin.Columns.Address+" LIKE ?", "%"+req.Address+"%"
 	if req.Address != "" {
-		m = m.Where(dao.Coin.Columns.Address+" = ?", req.Address)
+		m = m.Where(dao.Coin.Columns.Address+" LIKE ?", "%"+req.Address+"%")
 	}
 	total, err = m.Count()
 	if err != nil {
@@ -134,12 +135,23 @@ func (s *coin) GetNameByAddress(ctx context.Context, address string) (name strin
 
 // Add 添加
 func (s *coin) Add(ctx context.Context, req *dao.CoinAddReq) (err error) {
+
+	if req.Address == "" {
+		// 为公链原生币
+		req.Address = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+	}
+
 	_, err = dao.Coin.Ctx(ctx).Insert(req)
 	return
 }
 
 // Edit 修改
 func (s *coin) Edit(ctx context.Context, req *dao.CoinEditReq) error {
+
+	if req.Address == "" {
+		// 为公链原生币
+		req.Address = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+	}
 	_, err := dao.Coin.Ctx(ctx).FieldsEx(dao.Coin.Columns.Id).Where(dao.Coin.Columns.Id, req.Id).
 		Update(req)
 	return err
@@ -182,7 +194,7 @@ func (s *coin) ExportCoins(req *dao.CoinSearchReq) ([]byte, error) {
 		if err != nil {
 			err = gerror.New("获取链名称名称失败")
 		}
-		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", i+2), coin.Id)
+		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", i+2), i+1)
 		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", i+2), coin.Name)
 		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", i+2), SourceChainName)
 		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", i+2), coin.Decimals)

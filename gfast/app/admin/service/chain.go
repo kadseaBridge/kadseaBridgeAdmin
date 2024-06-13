@@ -108,7 +108,7 @@ func (s *chain) GetNameByChainId(ctx context.Context, chainId string) (name stri
 	}
 
 	// 只选择 Name 字段
-	err = dao.Coin.Ctx(ctx).Where(dao.Chain.Columns.ChainId, chainId).Fields("name").Scan(&result)
+	err = dao.Chain.Ctx(ctx).Where(dao.Chain.Columns.ChainId, chainId).Fields("name").Scan(&result)
 	if err != nil {
 		g.Log().Error(err)
 		return
