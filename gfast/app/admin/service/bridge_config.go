@@ -76,14 +76,53 @@ func (s *bridgeConfig) GetInfoById(ctx context.Context, id int64) (info *model.B
 
 // Add 添加
 func (s *bridgeConfig) Add(ctx context.Context, req *dao.BridgeConfigAddReq) (err error) {
+
+	var targetCoinAddress string
+	var sourceCoinAddress string
+	if len(req.TargetCoinAddress) != 42 {
+		targetCoinAddress, err = Coin.GetAddressByNameAndChainId(ctx, req.SourceCoinAddress, req.TargetChainId)
+		if err != nil {
+			err = gerror.New("目标链地址失败")
+		}
+	}
+
+	if len(req.SourceCoinAddress) != 42 {
+		sourceCoinAddress, err = Coin.GetAddressByNameAndChainId(ctx, req.SourceCoinAddress, req.SourceChainId)
+		if err != nil {
+			err = gerror.New("获取当前链地址失败")
+		}
+	}
+
+	req.TargetCoinAddress = targetCoinAddress
+	req.SourceCoinAddress = sourceCoinAddress
+
 	_, err = dao.BridgeConfig.Ctx(ctx).Insert(req)
 	return
 }
 
 // Edit 修改
-func (s *bridgeConfig) Edit(ctx context.Context, req *dao.BridgeConfigEditReq) error {
-	_, err := dao.BridgeConfig.Ctx(ctx).FieldsEx(dao.BridgeConfig.Columns.Id).Where(dao.BridgeConfig.Columns.Id, req.Id).
-		Update(req)
+func (s *bridgeConfig) Edit(ctx context.Context, req *dao.BridgeConfigEditReq) (err error) {
+
+	var targetCoinAddress string
+	var sourceCoinAddress string
+	if len(req.TargetCoinAddress) != 42 {
+		targetCoinAddress, err = Coin.GetAddressByNameAndChainId(ctx, req.SourceCoinAddress, req.TargetChainId)
+		if err != nil {
+			err = gerror.New("目标链地址失败")
+		}
+	}
+
+	if len(req.SourceCoinAddress) != 42 {
+		sourceCoinAddress, err = Coin.GetAddressByNameAndChainId(ctx, req.SourceCoinAddress, req.SourceChainId)
+		if err != nil {
+			err = gerror.New("获取当前链地址失败")
+		}
+	}
+
+	req.TargetCoinAddress = targetCoinAddress
+	req.SourceCoinAddress = sourceCoinAddress
+
+	_, err = dao.BridgeConfig.Ctx(ctx).FieldsEx(dao.BridgeConfig.Columns.Id).Where(dao.BridgeConfig.Columns.Id, req.Id).Update(req)
 	return err
 }
 
