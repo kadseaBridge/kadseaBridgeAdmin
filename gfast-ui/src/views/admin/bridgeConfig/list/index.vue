@@ -182,9 +182,9 @@
                >{{dict.value }}</el-radio>
            </el-radio-group>
        </el-form-item>
-      <el-form-item label="目标链合约地址" prop="targetCoinAddress">
-           <el-input v-model="form.targetCoinAddress" placeholder="请输入目标链合约地址" />
-      </el-form-item>
+<!--      <el-form-item label="目标链合约地址" prop="targetCoinAddress">-->
+<!--           <el-input v-model="form.targetCoinAddress" placeholder="请输入目标链合约地址" />-->
+<!--      </el-form-item>-->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
