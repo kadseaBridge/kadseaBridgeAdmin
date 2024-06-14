@@ -51,12 +51,31 @@ func (s *bridgeOrder) GetList(req *dao.BridgeOrderSearchReq) (total, page int, o
 	if req.Status != "" {
 		m = m.Where(dao.BridgeOrder.Columns.Status+" = ?", req.Status)
 	}
-	if len(req.StartRange) == 2 {
-		m = m.Where(dao.BridgeOrder.Columns.CreateAt+" BETWEEN ? AND ?", req.StartRange[0], req.StartRange[1])
+
+	// TODO 待优化 下面的 like 语句的sql还识别不了，
+	if req.StartDate1 != nil || req.StartDate2 != nil {
+		if req.StartDate1 != nil && req.StartDate2 != nil {
+			m = m.Where(dao.BridgeOrder.Columns.CreateAt+" BETWEEN ? AND ?", req.StartDate1, req.StartDate2)
+		} else if req.StartDate1 != nil {
+			m = m.Where(dao.BridgeOrder.Columns.CreateAt+"= ?", req.StartDate1)
+		} else if req.StartDate2 != nil {
+			m = m.Where(dao.BridgeOrder.Columns.CreateAt+"= ?", req.StartDate2)
+		}
+
 	}
-	if len(req.EndRange) == 2 {
-		m = m.Where(dao.BridgeOrder.Columns.CreateAt+"status = 5 AND BETWEEN ? AND ?", req.EndRange[0], req.EndRange[1])
+
+	if req.EndDate1 != nil || req.EndDate2 != nil {
+		m = m.Where(dao.BridgeOrder.Columns.Status + "= 5")
+		if req.EndDate1 != nil && req.EndDate2 != nil {
+			m = m.Where(dao.BridgeOrder.Columns.UpdateAt+" BETWEEN ? AND ?", req.EndDate1, req.EndDate2)
+		} else if req.EndDate1 != nil { //
+			m = m.Where(dao.BridgeOrder.Columns.UpdateAt+" like ?", req.EndDate1)
+		} else if req.EndDate2 != nil {
+			m = m.Where(dao.BridgeOrder.Columns.UpdateAt+" like ?", req.EndDate2)
+		}
+
 	}
+
 	total, err = m.Count()
 	if err != nil {
 		g.Log().Error(err)
@@ -91,7 +110,7 @@ func (s *bridgeOrder) GetList(req *dao.BridgeOrderSearchReq) (total, page int, o
 			err = gerror.New("获取币种名称失败")
 		}
 
-		targetCoinName, err := Coin.GetNameByAddress(req.Ctx, order.SourceCoinAddress)
+		targetCoinName, err := Coin.GetNameByAddress(req.Ctx, order.TargetCoinAddress)
 		if err != nil {
 			err = gerror.New("获取币种名称失败")
 		}
@@ -182,7 +201,7 @@ func (s *bridgeOrder) DeleteByIds(ctx context.Context, ids []int) (err error) {
 // ChangeStatus 修改状态
 func (s *bridgeOrder) ChangeStatus(ctx context.Context, req *dao.BridgeOrderStatusReq) error {
 	_, err := dao.BridgeOrder.Ctx(ctx).WherePri(req.Id).Update(g.Map{
-		dao.BridgeOrder.Columns.Status: req.Status,
+		dao.BridgeOrder.Columns.Status: req.ReviewStatus,
 	})
 	return err
 }

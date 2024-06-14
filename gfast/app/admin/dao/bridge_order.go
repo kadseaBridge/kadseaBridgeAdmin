@@ -45,16 +45,18 @@ var (
 
 // BridgeOrderSearchReq 分页请求参数
 type BridgeOrderSearchReq struct {
-	SourceAddress     string        `p:"sourceAddress"`     //转出币种
-	TargetAddress     string        `p:"targetAddress"`     //转入币种
-	SourceCoinAddress string        `p:"sourceCoinAddress"` //转出钱包地址
-	TargetCoinAddress string        `p:"targetCoinAddress"` //转入钱包地址
-	SourceChainId     string        `p:"sourceChainId"`     //转出链
-	TargetChainId     string        `p:"targetChainId"`     //转入链
-	TransactionHash   string        `p:"transactionHash"`   //交易哈希
-	Status            string        `p:"status"`            //跨链记录状态
-	StartRange        []*gtime.Time `p:"startRange"`        //发起时间
-	EndRange          []*gtime.Time `p:"endRange"`          //结束时间
+	SourceAddress     string      `p:"sourceAddress"`     //转出币种
+	TargetAddress     string      `p:"targetAddress"`     //转入币种
+	SourceCoinAddress string      `p:"sourceCoinAddress"` //转出钱包地址
+	TargetCoinAddress string      `p:"targetCoinAddress"` //转入钱包地址
+	SourceChainId     string      `p:"sourceChainId"`     //转出链
+	TargetChainId     string      `p:"targetChainId"`     //转入链
+	TransactionHash   string      `p:"transactionHash"`   //交易哈希
+	Status            string      `p:"status"`            //跨链记录状态
+	StartDate1        *gtime.Time `p:"startDate1"`        //发起时间1
+	StartDate2        *gtime.Time `p:"startDate2"`        //发起时间2
+	EndDate1          *gtime.Time `p:"endDate1"`          //结束时间1
+	EndDate2          *gtime.Time `p:"endDate2"`          //结束时间2
 	comModel.PageReq
 }
 
@@ -78,13 +80,24 @@ type BridgeOrderAddReq struct {
 }
 
 // BridgeOrderEditReq 修改操作请求参数
+//type BridgeOrderEditReq struct {
+//	Id     int64 `p:"id" v:"required#主键ID不能为空"`
+//	Status int   `p:"status" v:"required#跨链记录状态不能为空"`
+//}
+//
+//// BridgeOrderStatusReq 设置用户状态参数
+//type BridgeOrderStatusReq struct {
+//	Id     int64 `p:"id" v:"required#主键ID不能为空"`
+//	Status int   `p:"status" v:"required#跨链记录状态不能为空"`
+//}
+
 type BridgeOrderEditReq struct {
-	Id     int64 `p:"id" v:"required#主键ID不能为空"`
-	Status int   `p:"status" v:"required#跨链记录状态不能为空"`
+	Id           int64 `p:"id" v:"required#主键ID不能为空"`
+	ReviewStatus int   `p:"reviewStatus" v:"required#跨链记录状态不能为空"`
 }
 
 // BridgeOrderStatusReq 设置用户状态参数
 type BridgeOrderStatusReq struct {
-	Id     int64 `p:"id" v:"required#主键ID不能为空"`
-	Status int   `p:"status" v:"required#跨链记录状态不能为空"`
+	Id           int64 `p:"id" v:"required#主键ID不能为空"`
+	ReviewStatus int   `p:"reviewStatus" v:"required#跨链记录状态不能为空"`
 }

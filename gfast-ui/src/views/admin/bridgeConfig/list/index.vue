@@ -49,12 +49,12 @@
     </el-row>
     <el-table v-loading="loading" :data="bridgeConfigList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <!-- <el-table-column label="" align="center" prop="id" /> -->
-      <el-table-column label="序号" width="50">
-        <template v-slot="scope">
-          {{ scope.$index + 1 }}
-        </template>
-      </el-table-column>
+       <el-table-column label="序号" align="center" prop="id" />
+<!--      <el-table-column label="序号" width="50">-->
+<!--        <template v-slot="scope">-->
+<!--          {{ scope.$index + 1 }}-->
+<!--        </template>-->
+<!--      </el-table-column>-->
       <el-table-column label="当前链" align="center" prop="sourceChainId" :formatter="sourceChainIdFormat" width="150">
         <template slot-scope="scope">
           {{ sourceChainIdFormat(scope.row) }}
