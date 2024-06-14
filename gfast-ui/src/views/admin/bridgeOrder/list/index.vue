@@ -1,10 +1,28 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" label-width="68px">
+      <el-form-item  prop="sourceCoinAddress">
+        <el-input
+          v-model="queryParams.sourceCoinAddress"
+          placeholder="转出币种"
+          clearable
+          size="small"
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item prop="targetCoinAddress">
+        <el-input
+          v-model="queryParams.targetCoinAddress"
+          placeholder="转入币种"
+          clearable
+          size="small"
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
       <el-form-item  prop="sourceAddress">
         <el-input
             v-model="queryParams.sourceAddress"
-            placeholder="请输入转出币种"
+            placeholder="转出钱包地址"
             clearable
             size="small"
             @keyup.enter.native="handleQuery"
@@ -13,30 +31,31 @@
       <el-form-item  prop="targetAddress">
         <el-input
             v-model="queryParams.targetAddress"
-            placeholder="请输入转入币种"
+            placeholder="转入钱包地址"
             clearable
             size="small"
             @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item  prop="sourceCoinAddress">
+      <el-form-item  prop="transactionHash">
         <el-input
-            v-model="queryParams.sourceCoinAddress"
-            placeholder="请输入转出钱包地址"
-            clearable
-            size="small"
-            @keyup.enter.native="handleQuery"
+          v-model="queryParams.transactionHash"
+          placeholder="转出TXID"
+          clearable
+          size="small"
+          @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item prop="targetCoinAddress">
-        <el-input
-            v-model="queryParams.targetCoinAddress"
-            placeholder="请输入转入钱包地址"
-            clearable
-            size="small"
-            @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
+
+<!--      <el-form-item prop="targetCoinAddress">-->
+<!--        <el-input-->
+<!--            v-model="queryParams.targetCoinAddress"-->
+<!--            placeholder="转入币种地址"-->
+<!--            clearable-->
+<!--            size="small"-->
+<!--            @keyup.enter.native="handleQuery"-->
+<!--        />-->
+<!--      </el-form-item>-->
         <el-form-item label="转出链" prop="sourceChainId">
           <el-select v-model="queryParams.sourceChainId" placeholder="请选择转出链" clearable size="small">
               <el-option
@@ -57,15 +76,6 @@
               />
           </el-select>
         </el-form-item>
-      <el-form-item  prop="transactionHash">
-        <el-input
-            v-model="queryParams.transactionHash"
-            placeholder="请输入交易哈希"
-            clearable
-            size="small"
-            @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
 
       <el-form-item label="状态" prop="status">
         <el-select v-model="queryParams.status" placeholder="状态" clearable size="small">
