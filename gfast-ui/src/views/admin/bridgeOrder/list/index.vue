@@ -188,7 +188,7 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <div v-if="scope.row.status === 0">自动审核中</div>
-          <div v-else-if="scope.row.status > 5">操作已完成</div>
+          <div v-else-if="scope.row.status > 1">操作已完成</div>
           <div v-else>
             <el-button
               size="mini"
