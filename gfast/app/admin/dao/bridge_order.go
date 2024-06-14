@@ -80,20 +80,9 @@ type BridgeOrderAddReq struct {
 }
 
 // BridgeOrderEditReq 修改操作请求参数
-//type BridgeOrderEditReq struct {
-//	Id     int64 `p:"id" v:"required#主键ID不能为空"`
-//	Status int   `p:"status" v:"required#跨链记录状态不能为空"`
-//}
-//
-//// BridgeOrderStatusReq 设置用户状态参数
-//type BridgeOrderStatusReq struct {
-//	Id     int64 `p:"id" v:"required#主键ID不能为空"`
-//	Status int   `p:"status" v:"required#跨链记录状态不能为空"`
-//}
-
 type BridgeOrderEditReq struct {
-	Id           int64 `p:"id" v:"required#主键ID不能为空"`
-	ReviewStatus int   `p:"reviewStatus" v:"required#跨链记录状态不能为空"`
+	Id     int64 `p:"id" v:"required#主键ID不能为空"`
+	Status int   `p:"status" v:"required#跨链记录状态不能为空"`
 }
 
 // BridgeOrderStatusReq 设置用户状态参数
@@ -101,3 +90,14 @@ type BridgeOrderStatusReq struct {
 	Id           int64 `p:"id" v:"required#主键ID不能为空"`
 	ReviewStatus int   `p:"reviewStatus" v:"required#跨链记录状态不能为空"`
 }
+
+//type BridgeOrderEditReq struct {
+//	Id           int64 `p:"id" v:"required#主键ID不能为空"`
+//	ReviewStatus int   `p:"reviewStatus" v:"required#跨链记录状态不能为空"`
+//}
+//
+//// BridgeOrderStatusReq 设置用户状态参数
+//type BridgeOrderStatusReq struct {
+//	Id           int64 `p:"id" v:"required#主键ID不能为空"`
+//	ReviewStatus int   `p:"reviewStatus" v:"required#跨链记录状态不能为空"`
+//}

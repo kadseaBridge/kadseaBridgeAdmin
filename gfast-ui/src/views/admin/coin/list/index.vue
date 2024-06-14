@@ -67,16 +67,8 @@
     </el-row>
     <el-table v-loading="loading" :data="coinList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
+      <el-table-column label="序号" align="center" prop="id" />
       <el-table-column label="币种" align="center" prop="symbol" />
-
-       <el-table-column label="序号" align="center" prop="id" />
-<!--      <el-table-column label="序号" width="50">-->
-<!--        <template v-slot="scope">-->
-<!--          {{ scope.$index + 1 }}-->
-<!--        </template>-->
-<!--      </el-table-column>-->
-      <el-table-column label="代币简称" align="center" prop="symbol" />
-
       <el-table-column label="链" align="center" prop="chainId" :formatter="chainIdFormat" width="100">
         <template slot-scope="scope">
           {{ chainIdFormat(scope.row) }}

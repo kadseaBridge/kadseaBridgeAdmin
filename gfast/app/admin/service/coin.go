@@ -194,7 +194,7 @@ func (s *coin) ExportCoins(req *dao.CoinSearchReq) ([]byte, error) {
 		if err != nil {
 			err = gerror.New("获取链名称名称失败")
 		}
-		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", i+2), i+1)
+		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", i+2), coin.Id)
 		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", i+2), coin.Name)
 		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", i+2), SourceChainName)
 		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", i+2), coin.Decimals)

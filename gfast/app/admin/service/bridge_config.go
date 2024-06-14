@@ -173,7 +173,7 @@ func (s *bridgeConfig) ExportBridgeConfigs(req *dao.BridgeConfigSearchReq) ([]by
 			err = gerror.New("获取链名称名称失败")
 		}
 
-		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", i+2), i+1)
+		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", i+2), bridgeConfig.Id)
 		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", i+2), SourceChainName)
 		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", i+2), coinName)
 		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", i+2), TargetChainName)

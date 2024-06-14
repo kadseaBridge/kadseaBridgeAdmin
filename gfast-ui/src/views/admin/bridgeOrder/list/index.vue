@@ -174,15 +174,30 @@
         </template>
       </el-table-column>
 
+<!--      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">-->
+<!--        <template slot-scope="scope">-->
+<!--          <el-button-->
+<!--            size="mini"-->
+<!--            type="text"-->
+<!--            icon="el-icon-edit"-->
+<!--            @click="handleUpdate(scope.row)"-->
+<!--            v-hasPermi="['admin/bridgeOrder/edit']"-->
+<!--          >人工审核</el-button>-->
+<!--        </template>-->
+<!--      </el-table-column>-->
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['admin/bridgeOrder/edit']"
-          >人工审核</el-button>
+          <div v-if="scope.row.status === 0">自动审核中</div>
+          <div v-else-if="scope.row.status > 5">操作已完成</div>
+          <div v-else>
+            <el-button
+              size="mini"
+              type="text"
+              icon="el-icon-edit"
+              @click="handleUpdate(scope.row)"
+              v-hasPermi="['admin/bridgeOrder/edit']"
+            >人工审核</el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -193,12 +208,12 @@
       :limit.sync="queryParams.pageSize"
       @pagination="getList"
     />
-    <!-- 添加或修改跨链记录对话框 -->
+    <!-- 修改跨链记录状态对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body :close-on-click-modal="false">
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
 
       <el-form-item label="人工审核状态" label-width="150px"  prop="status">
-          <el-select v-model="form.reviewStatus" placeholder="请审核">
+          <el-select v-model="form.status" placeholder="请审核">
               <el-option
                   v-for="dict in manualReviewStatus"
                   :key="dict.key"
@@ -269,8 +284,6 @@ export default {
         targetChainId: undefined,
         transactionHash: undefined,
         status: undefined,
-        startRange: undefined,
-        endRange: [],
         startDate1:undefined,
         startDate2:undefined,
         endDate1:undefined,
@@ -285,6 +298,9 @@ export default {
         status : [
           { required: true, message: '请选择审核状态', trigger: 'change' }
         ],
+        reviewStatus: [
+          { required: true, message: '请选择人工审核状态', trigger: 'change' }
+        ]
       }
     };
   },
@@ -299,10 +315,6 @@ export default {
       this.manualReviewStatus = response.data.values||[];
     });
 
-    // this.manualReviewStatus = [
-    //   { key: 2, value: "审核通过" },
-    //   { key: 7, value: "审核失败" },
-    // ];
     this.getList();
   },
   methods: {
@@ -359,6 +371,7 @@ export default {
         orderId: undefined,
         amount: undefined,
         status: undefined,
+        reviewStatus: null,
         createAt: undefined,
         updateAt: undefined,
         blockNumber: undefined,
@@ -392,7 +405,9 @@ export default {
         let data = response.data;
         data.sourceChainId = ''+data.sourceChainId
         data.targetChainId = ''+data.targetChainId
+        data.reviewStatus = data.reviewStatus || null;
         // data.status = ''+data.status
+        data.status = ''
         this.form = data;
         this.open = true;
         this.title = "人工审核跨链记录";
@@ -403,7 +418,7 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           if (this.form.id != undefined) {
-            changeBridgeOrderStatus(this.form).then(response => { // TODO
+            updateBridgeOrder(this.form).then(response => {
               if (response.code === 0) {
                 this.msgSuccess("修改成功");
                 this.open = false;

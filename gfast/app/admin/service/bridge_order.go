@@ -226,7 +226,7 @@ func (s *bridgeOrder) ExportOrders(req *dao.BridgeOrderSearchReq) ([]byte, error
 	// 填充数据
 	for i, order := range list {
 
-		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", i+2), i+1)
+		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", i+2), order.Id)
 		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", i+2), order.SourceCoinName)
 		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", i+2), order.TargetCoinName)
 		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", i+2), order.SourceChainName)
