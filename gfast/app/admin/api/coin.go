@@ -50,6 +50,8 @@ func (c *coin) Add(r *ghttp.Request) {
 	if err := r.Parse(&req); err != nil {
 		c.FailJsonExit(r, err.(gvalid.Error).FirstString())
 	}
+	// 所有新添加的币种都是上架状态
+	req.IsEnable = 1
 	err := service.Coin.Add(r.GetCtx(), req)
 	if err != nil {
 		c.FailJsonExit(r, err.Error())

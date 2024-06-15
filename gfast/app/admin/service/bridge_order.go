@@ -48,8 +48,21 @@ func (s *bridgeOrder) GetList(req *dao.BridgeOrderSearchReq) (total, page int, o
 	if req.TransactionHash != "" {
 		m = m.Where(dao.BridgeOrder.Columns.TransactionHash+" = ?", req.TransactionHash)
 	}
-	if req.Status != "" {
-		m = m.Where(dao.BridgeOrder.Columns.Status+" = ?", req.Status)
+
+	if req.Status != 0 {
+
+		if req.Status == 1 {
+			m = m.Where(dao.BridgeOrder.Columns.Status+" <= ?", 1)
+		}
+		if req.Status == 4 {
+			m = m.Where(dao.BridgeOrder.Columns.Status+" BETWEEN ? AND ?", 2, 4)
+		}
+		if req.Status == 5 {
+			m = m.Where(dao.BridgeOrder.Columns.Status+" = ?", 5)
+		}
+		if req.Status == 7 {
+			m = m.Where(dao.BridgeOrder.Columns.Status+" BETWEEN ? AND ?", 6, 7)
+		}
 	}
 
 	// TODO 待优化 下面的 like 语句的sql还识别不了，

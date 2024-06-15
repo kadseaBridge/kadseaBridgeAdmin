@@ -87,13 +87,13 @@
             @click="handleUpdate(scope.row)"
             v-hasPermi="['admin/coin/edit']"
           >修改</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['admin/coin/delete']"
-          >删除</el-button>
+<!--          <el-button-->
+<!--            size="mini"-->
+<!--            type="text"-->
+<!--            icon="el-icon-delete"-->
+<!--            @click="handleDelete(scope.row)"-->
+<!--            v-hasPermi="['admin/coin/delete']"-->
+<!--          >删除</el-button>-->
         </template>
       </el-table-column>
     </el-table>
@@ -130,15 +130,15 @@
            <el-input v-model="form.address" placeholder="请输入代币地址,如为空则表示公链原生币" />
       </el-form-item>
 
-       <el-form-item label="是否上架" prop="isEnable">
-           <el-radio-group v-model="form.isEnable">
-               <el-radio
-                v-for="dict in isEnableOptions"
-                :key="dict.key"
-                :label="dict.key"
-               >{{dict.value }}</el-radio>
-           </el-radio-group>
-       </el-form-item>
+<!--       <el-form-item label="是否上架" prop="isEnable">-->
+<!--           <el-radio-group v-model="form.isEnable">-->
+<!--               <el-radio-->
+<!--                v-for="dict in isEnableOptions"-->
+<!--                :key="dict.key"-->
+<!--                :label="dict.key"-->
+<!--               >{{dict.value }}</el-radio>-->
+<!--           </el-radio-group>-->
+<!--       </el-form-item>-->
       <el-form-item label="币种类型" prop="tokenType">
           <el-select v-model="form.tokenType" placeholder="请选择币种类型">
               <el-option

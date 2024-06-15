@@ -25,26 +25,7 @@
           v-hasPermi="['admin/chain/add']"
         >新增</el-button>
       </el-col>
-<!--      <el-col :span="1.5">-->
-<!--        <el-button-->
-<!--          type="success"-->
-<!--          icon="el-icon-edit"-->
-<!--          size="mini"-->
-<!--          :disabled="single"-->
-<!--          @click="handleUpdate"-->
-<!--          v-hasPermi="['admin/chain/edit']"-->
-<!--        >修改</el-button>-->
-<!--      </el-col>-->
-<!--      <el-col :span="1.5">-->
-<!--        <el-button-->
-<!--          type="danger"-->
-<!--          icon="el-icon-delete"-->
-<!--          size="mini"-->
-<!--          :disabled="multiple"-->
-<!--          @click="handleDelete"-->
-<!--          v-hasPermi="['admin/chain/delete']"-->
-<!--        >删除</el-button>-->
-<!--      </el-col>-->
+
     </el-row>
     <el-table v-loading="loading" :data="chainList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
@@ -72,13 +53,13 @@
             @click="handleUpdate(scope.row)"
             v-hasPermi="['admin/chain/edit']"
           >修改</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['admin/chain/delete']"
-          >删除</el-button>
+<!--          <el-button-->
+<!--            size="mini"-->
+<!--            type="text"-->
+<!--            icon="el-icon-delete"-->
+<!--            @click="handleDelete(scope.row)"-->
+<!--            v-hasPermi="['admin/chain/delete']"-->
+<!--          >删除</el-button>-->
         </template>
       </el-table-column>
     </el-table>
@@ -101,35 +82,20 @@
       <el-form-item label="链rpc" prop="rpc">
            <el-input v-model="form.rpc" placeholder="请输入链rpc" />
       </el-form-item>
-      <el-form-item label="链浏览器地址" prop="explorer">
+      <el-form-item label="链浏览器地址" prop="explorer" label-width="100px" >
            <el-input v-model="form.explorer" placeholder="请输入链浏览器地址" />
       </el-form-item>
-      <el-form-item label="状态" prop="isEnable">
-          <el-select v-model="form.isEnable" placeholder="请选择状态">
-              <el-option
-                  v-for="dict in isEnableOptions"
-                  :key="dict.key"
-                  :label="dict.value"
-                      :value="dict.key"
-              ></el-option>
-          </el-select>
-      </el-form-item>
-<!--       <el-form-item label="创建时间" prop="createAt">-->
-<!--           <el-date-picker clearable size="small" style="width: 200px"-->
-<!--               v-model="form.createAt"-->
-<!--               type="date"-->
-<!--               value-format="yyyy-MM-dd"-->
-<!--               placeholder="选择创建时间">-->
-<!--           </el-date-picker>-->
-<!--       </el-form-item>-->
-<!--       <el-form-item label="更新时间" prop="updateAt">-->
-<!--           <el-date-picker clearable size="small" style="width: 200px"-->
-<!--               v-model="form.updateAt"-->
-<!--               type="date"-->
-<!--               value-format="yyyy-MM-dd"-->
-<!--               placeholder="选择更新时间">-->
-<!--           </el-date-picker>-->
-<!--       </el-form-item>-->
+<!--      <el-form-item label="状态" prop="isEnable">-->
+<!--          <el-select v-model="form.isEnable" placeholder="请选择状态">-->
+<!--              <el-option-->
+<!--                  v-for="dict in isEnableOptions"-->
+<!--                  :key="dict.key"-->
+<!--                  :label="dict.value"-->
+<!--                      :value="dict.key"-->
+<!--              ></el-option>-->
+<!--          </el-select>-->
+<!--      </el-form-item>-->
+
       <el-form-item label="链类型" prop="type">
           <el-select v-model="form.type" placeholder="链类型">
               <el-option
@@ -143,16 +109,16 @@
       <el-form-item label="链图标" prop="icon">
            <el-input v-model="form.icon" placeholder="请输入链图标" />
       </el-form-item>
-      <el-form-item label="软删除" prop="isDelete">
-          <el-select v-model="form.isDelete" placeholder="请选择软删除">
-              <el-option
-                  v-for="dict in isDeleteOptions"
-                  :key="dict.key"
-                  :label="dict.value"
-                      :value="dict.key"
-              ></el-option>
-          </el-select>
-      </el-form-item>
+<!--      <el-form-item label="软删除" prop="isDelete">-->
+<!--          <el-select v-model="form.isDelete" placeholder="请选择软删除">-->
+<!--              <el-option-->
+<!--                  v-for="dict in isDeleteOptions"-->
+<!--                  :key="dict.key"-->
+<!--                  :label="dict.value"-->
+<!--                      :value="dict.key"-->
+<!--              ></el-option>-->
+<!--          </el-select>-->
+<!--      </el-form-item>-->
 <!--      <el-form-item label="maxGasPrice" prop="maxGasPrice">-->
 <!--           <el-input v-model="form.maxGasPrice" placeholder="请输入支付时，该公链最大接受的gasprice,如果超过则不进行目标链支付,为0时， 为0时，所有订单都不进行支付， 如果想要所有的订单都进行支付，不管gasprice 则设置很大   单位：wei" />-->
 <!--      </el-form-item>-->

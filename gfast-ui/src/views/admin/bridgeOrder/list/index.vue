@@ -355,7 +355,23 @@ export default {
     },
     // 跨链记录状态字典翻译
     statusFormat(row, column) {
-      return this.selectDictLabel(this.statusOptions, row.status);
+      // return this.selectDictLabel(this.statusOptions, row.status);
+      if (row.status <=1) {
+        return "待审核"
+      }
+      if (1 < row.status && row.status  <= 4) {
+        return "进行中"
+      }
+
+      if (row.status === 5) {
+        return "已完成"
+      }
+
+
+      if (row.status > 5) {
+        return "跨链失败"
+      }
+
     },
 
     // 人工审核状态字典翻译

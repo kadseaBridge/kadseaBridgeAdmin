@@ -40,13 +40,13 @@ type ChainAddReq struct {
 	ChainId               string      `p:"chainId" v:"required#链Id不能为空"`
 	Rpc                   string      `p:"rpc" v:"required#链rpc不能为空"`
 	Explorer              string      `p:"explorer" `
-	IsEnable              int         `p:"isEnable" v:"required#状态不能为空"`
+	IsEnable              int         `p:"isEnable" `
 	CreateAt              *gtime.Time `p:"createAt" `
 	UpdateAt              *gtime.Time `p:"updateAt" `
 	ChainType             int         `p:"type" v:"required#0 ethereum 1 tron  2 btc不能为空"`
 	Icon                  string      `p:"icon" `
 	IsDelete              int         `p:"isDelete" `
-	MaxGasPrice           float64     `p:"maxGasPrice" v:"required#支付时，该公链最大接受的gasprice,如果超过则不进行目标链支付,为0时， 为0时，所有订单都不进行支付， 如果想要所有的订单都进行支付，不管gasprice 则设置很大   单位：wei不能为空"`
+	MaxGasPrice           float64     `p:"maxGasPrice" v:"required#maxGasPrice不能为空"`
 	EnablePay             int         `p:"enablePay" v:"required#该公链作为目标时，是否允许支付不能为空"`
 	BridgeContractAddress string      `p:"bridgeContractAddress" v:"required#跨链桥合约地址不能为空"`
 }
@@ -58,13 +58,13 @@ type ChainEditReq struct {
 	ChainId               string      `p:"chainId" v:"required#链Id不能为空"`
 	Rpc                   string      `p:"rpc" v:"required#链rpc不能为空"`
 	Explorer              string      `p:"explorer" `
-	IsEnable              int         `p:"isEnable" v:"required#状态不能为空"`
+	IsEnable              int         `p:"isEnable"`
 	CreateAt              *gtime.Time `p:"createAt" `
 	UpdateAt              *gtime.Time `p:"updateAt" `
 	ChainType             int         `p:"type" v:"required#0 ethereum 1 tron  2 btc不能为空"`
 	Icon                  string      `p:"icon" `
 	IsDelete              int         `p:"isDelete" `
-	MaxGasPrice           float64     `p:"maxGasPrice" v:"required#支付时，该公链最大接受的gasprice,如果超过则不进行目标链支付,为0时， 为0时，所有订单都不进行支付， 如果想要所有的订单都进行支付，不管gasprice 则设置很大   单位：wei不能为空"`
+	MaxGasPrice           float64     `p:"maxGasPrice" v:"required#maxGasPrice不能为空"`
 	EnablePay             int         `p:"enablePay" v:"required#该公链作为目标时，是否允许支付不能为空"`
 	BridgeContractAddress string      `p:"bridgeContractAddress" v:"required#跨链桥合约地址不能为空"`
 }

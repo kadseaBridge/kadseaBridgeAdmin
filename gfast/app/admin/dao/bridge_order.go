@@ -52,7 +52,7 @@ type BridgeOrderSearchReq struct {
 	SourceChainId     string      `p:"sourceChainId"`     //转出链
 	TargetChainId     string      `p:"targetChainId"`     //转入链
 	TransactionHash   string      `p:"transactionHash"`   //交易哈希
-	Status            string      `p:"status"`            //跨链记录状态
+	Status            int         `p:"status"`            //跨链记录状态
 	StartDate1        *gtime.Time `p:"startDate1"`        //发起时间1
 	StartDate2        *gtime.Time `p:"startDate2"`        //发起时间2
 	EndDate1          *gtime.Time `p:"endDate1"`          //结束时间1
@@ -90,14 +90,3 @@ type BridgeOrderStatusReq struct {
 	Id           int64 `p:"id" v:"required#主键ID不能为空"`
 	ReviewStatus int   `p:"reviewStatus" v:"required#跨链记录状态不能为空"`
 }
-
-//type BridgeOrderEditReq struct {
-//	Id           int64 `p:"id" v:"required#主键ID不能为空"`
-//	ReviewStatus int   `p:"reviewStatus" v:"required#跨链记录状态不能为空"`
-//}
-//
-//// BridgeOrderStatusReq 设置用户状态参数
-//type BridgeOrderStatusReq struct {
-//	Id           int64 `p:"id" v:"required#主键ID不能为空"`
-//	ReviewStatus int   `p:"reviewStatus" v:"required#跨链记录状态不能为空"`
-//}
