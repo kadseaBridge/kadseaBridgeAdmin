@@ -122,7 +122,9 @@
                   :label="item.value"
                   :value="item.value"
               ></el-option>
+
           </el-select>
+
       </el-form-item>
       <el-form-item label="对手链" prop="targetChainId">
           <el-select v-model="form.targetChainId" placeholder="请选择对手链">
@@ -249,9 +251,7 @@ export default {
         isEnable : [
           { required: true, message: "状态不能为空", trigger: "blur" }
         ],
-        // targetCoinAddress : [
-        //   { required: true, message: "目标链合约地址不能为空", trigger: "blur" }
-        // ],
+
       }
     };
   },
@@ -273,9 +273,6 @@ export default {
       console.log('Coin items response:', this.sourceChainIdOptions);
     },
 
-    // calculateTotalFee(row) {
-    //   return row.feeFixed + row.feePercent;
-    // },
 
     calculateTotalFee(row) {
       return `${row.feePercent}% + ${row.feeFixed}`;
@@ -317,7 +314,7 @@ export default {
     },
     // 币种关联表翻译
     sourceCoinAddressFormat(row, column) {
-      return this.selectItemsLabel(this.sourceCoinAddressOptions, row.sourceCoinAddress);
+      return this.selectItemsLabel2(this.sourceCoinAddressOptions, row.sourceCoinAddress, row.sourceChainId);
     },
     // 状态字典翻译
     isEnableFormat(row, column) {
@@ -378,6 +375,15 @@ export default {
       const chainIds = filteredCoinRecords.map(item => item.chainId);
       this.filteredTargetChainOptionsDialog = this.sourceChainIdOptions.filter(option => chainIds.includes(option.key) && option.key !== this.form.sourceChainId);
       this.form.targetChainId = undefined; // 重置对手链选择框
+    },
+
+    selectItemsLabel2(datas, address, chainId) {
+      for (let item of datas) {
+        if (item.key === String(address) && item.chainId === String(chainId)) {
+          return item.value;
+        }
+      }
+      return null; // 或者返回一个默认值
     },
 
     /** 重置按钮操作 */

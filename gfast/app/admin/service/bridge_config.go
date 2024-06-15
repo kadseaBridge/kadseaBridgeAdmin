@@ -17,6 +17,7 @@ import (
 	"github.com/gogf/gf/errors/gerror"
 	"github.com/gogf/gf/frame/g"
 	"github.com/xuri/excelize/v2"
+	"strings"
 )
 
 type bridgeConfig struct {
@@ -97,30 +98,17 @@ func (s *bridgeConfig) Add(ctx context.Context, req *dao.BridgeConfigAddReq) (er
 	req.SourceCoinAddress = sourceCoinAddress
 
 	_, err = dao.BridgeConfig.Ctx(ctx).Insert(req)
+	if err != nil {
+		if strings.Contains(err.Error(), "Duplicate entry") {
+			return fmt.Errorf("不能添加重复数据")
+		}
+		return err
+	}
 	return
 }
 
 // Edit 修改
 func (s *bridgeConfig) Edit(ctx context.Context, req *dao.BridgeConfigEditReq) (err error) {
-
-	var targetCoinAddress string
-	var sourceCoinAddress string
-	if len(req.TargetCoinAddress) != 42 {
-		targetCoinAddress, err = Coin.GetAddressByNameAndChainId(ctx, req.SourceCoinAddress, req.TargetChainId)
-		if err != nil {
-			err = gerror.New("目标链地址失败")
-		}
-	}
-
-	if len(req.SourceCoinAddress) != 42 {
-		sourceCoinAddress, err = Coin.GetAddressByNameAndChainId(ctx, req.SourceCoinAddress, req.SourceChainId)
-		if err != nil {
-			err = gerror.New("获取当前链地址失败")
-		}
-	}
-
-	req.TargetCoinAddress = targetCoinAddress
-	req.SourceCoinAddress = sourceCoinAddress
 
 	_, err = dao.BridgeConfig.Ctx(ctx).FieldsEx(dao.BridgeConfig.Columns.Id).Where(dao.BridgeConfig.Columns.Id, req.Id).Update(req)
 	return err
