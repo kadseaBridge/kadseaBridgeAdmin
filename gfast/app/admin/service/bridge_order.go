@@ -168,6 +168,150 @@ func (s *bridgeOrder) GetList(req *dao.BridgeOrderSearchReq) (total, page int, o
 	return
 }
 
+// GetAll
+func (s *bridgeOrder) GetListAll(req *dao.BridgeOrderSearchReq) (total, page int, orderlist []*model.BridgeOrderRsp, err error) {
+	m := dao.BridgeOrder.Ctx(req.Ctx)
+	if req.SourceAddress != "" {
+		m = m.Where(dao.BridgeOrder.Columns.SourceAddress+" = ?", req.SourceAddress)
+	}
+	if req.TargetAddress != "" {
+		m = m.Where(dao.BridgeOrder.Columns.TargetAddress+" = ?", req.TargetAddress)
+	}
+	if req.SourceCoinAddress != "" {
+		m = m.Where(dao.BridgeOrder.Columns.SourceCoinAddress+" = ?", req.SourceCoinAddress)
+	}
+	if req.TargetCoinAddress != "" {
+		m = m.Where(dao.BridgeOrder.Columns.TargetCoinAddress+" = ?", req.TargetCoinAddress)
+	}
+	if req.SourceChainId != "" {
+		m = m.Where(dao.BridgeOrder.Columns.SourceChainId+" = ?", req.SourceChainId)
+	}
+	if req.TargetChainId != "" {
+		m = m.Where(dao.BridgeOrder.Columns.TargetChainId+" = ?", req.TargetChainId)
+	}
+	if req.TransactionHash != "" {
+		m = m.Where(dao.BridgeOrder.Columns.TransactionHash+" = ?", req.TransactionHash)
+	}
+
+	if req.Status != 0 {
+
+		if req.Status == 1 {
+			m = m.Where(dao.BridgeOrder.Columns.Status+" <= ?", 1)
+		}
+		if req.Status == 4 {
+			m = m.Where(dao.BridgeOrder.Columns.Status+" BETWEEN ? AND ?", 2, 4)
+		}
+		if req.Status == 5 {
+			m = m.Where(dao.BridgeOrder.Columns.Status+" = ?", 5)
+		}
+		if req.Status == 7 {
+			m = m.Where(dao.BridgeOrder.Columns.Status+" BETWEEN ? AND ?", 6, 7)
+		}
+	}
+
+	// TODO 待优化 下面的 like 语句的sql还识别不了，
+	if req.StartDate1 != nil || req.StartDate2 != nil {
+		if req.StartDate1 != nil && req.StartDate2 != nil {
+			m = m.Where(dao.BridgeOrder.Columns.CreateAt+" BETWEEN ? AND ?", req.StartDate1, req.StartDate2)
+		} else if req.StartDate1 != nil {
+			m = m.Where(dao.BridgeOrder.Columns.CreateAt+"= ?", req.StartDate1)
+		} else if req.StartDate2 != nil {
+			m = m.Where(dao.BridgeOrder.Columns.CreateAt+"= ?", req.StartDate2)
+		}
+
+	}
+
+	if req.EndDate1 != nil || req.EndDate2 != nil {
+		m = m.Where(dao.BridgeOrder.Columns.Status + "= 5")
+		if req.EndDate1 != nil && req.EndDate2 != nil {
+			m = m.Where(dao.BridgeOrder.Columns.UpdateAt+" BETWEEN ? AND ?", req.EndDate1, req.EndDate2)
+		} else if req.EndDate1 != nil { //
+			m = m.Where(dao.BridgeOrder.Columns.UpdateAt+" like ?", req.EndDate1)
+		} else if req.EndDate2 != nil {
+			m = m.Where(dao.BridgeOrder.Columns.UpdateAt+" like ?", req.EndDate2)
+		}
+
+	}
+
+	total, err = m.Count()
+	if err != nil {
+		g.Log().Error(err)
+		err = gerror.New("获取总行数失败")
+		return
+	}
+	//if req.PageNum == 0 {
+	//	req.PageNum = 1
+	//}
+	//page = req.PageNum
+	//if req.PageSize == 0 {
+	//	req.PageSize = comModel.PageSize
+	//}
+	order := "id asc"
+	if req.OrderBy != "" {
+		order = req.OrderBy
+	}
+
+	var list []*model.BridgeOrder
+	err = m.Order(order).Scan(&list)
+
+	rsp := make([]*model.BridgeOrderRsp, len(list))
+
+	for i, order := range list {
+
+		tx, gas, err := PayDetail.GetGasAndTxByOrderId(req.Ctx, order.OrderId)
+		if err != nil {
+			err = gerror.New("获取链名称名称失败")
+		}
+		sourceCoinName, err := Coin.GetNameByAddress(req.Ctx, order.SourceCoinAddress)
+		if err != nil {
+			err = gerror.New("获取币种名称失败")
+		}
+
+		targetCoinName, err := Coin.GetNameByAddress(req.Ctx, order.TargetCoinAddress)
+		if err != nil {
+			err = gerror.New("获取币种名称失败")
+		}
+
+		sourceChainName, err := Chain.GetNameByChainId(req.Ctx, order.SourceChainId)
+		if err != nil {
+			err = gerror.New("获取链名称名称失败")
+		}
+
+		targetChainName, err := Chain.GetNameByChainId(req.Ctx, order.TargetChainId)
+		if err != nil {
+			err = gerror.New("获取链名称名称失败")
+		}
+		rsp[i] = &model.BridgeOrderRsp{
+			Id:              order.Id,
+			SourceAddress:   order.SourceAddress,
+			TargetAddress:   order.TargetAddress,
+			SourceCoinName:  sourceCoinName,
+			TargetCoinName:  targetCoinName,
+			SourceChainName: sourceChainName,
+			TargetChainName: targetChainName,
+			InHash:          tx,
+			OutHash:         order.TransactionHash,
+			OrderId:         order.OrderId,
+			Amount:          order.Amount,
+			Status:          order.Status,
+			CreateAt:        order.CreateAt,
+			UpdateAt:        order.UpdateAt,
+			BlockNumber:     order.BlockNumber,
+			Fee:             order.Fee,
+			GasFee:          gas,
+			Remark:          order.Remark,
+		}
+	}
+
+	orderlist = rsp
+
+	if err != nil {
+		g.Log().Error(err)
+		err = gerror.New("获取数据失败")
+	}
+	return
+}
+
 // GetInfoById 通过id获取
 func (s *bridgeOrder) GetInfoById(ctx context.Context, id int64) (info *model.BridgeOrder, err error) {
 	if id == 0 {
@@ -221,7 +365,7 @@ func (s *bridgeOrder) ChangeStatus(ctx context.Context, req *dao.BridgeOrderStat
 
 func (s *bridgeOrder) ExportOrders(req *dao.BridgeOrderSearchReq) ([]byte, error) {
 	// 获取数据库连接
-	_, _, list, err := s.GetList(req)
+	_, _, list, err := s.GetListAll(req)
 	if err != nil {
 		err = gerror.New("参数错误")
 	}

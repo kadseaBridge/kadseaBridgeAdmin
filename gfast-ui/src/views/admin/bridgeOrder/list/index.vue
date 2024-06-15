@@ -197,9 +197,7 @@
 <!--      </el-table-column>-->
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <div v-if="scope.row.status === 0">自动审核中</div>
-          <div v-else-if="scope.row.status > 1">操作已完成</div>
-          <div v-else>
+          <div v-if="scope.row.status === 1">
             <el-button
               size="mini"
               type="text"
@@ -208,6 +206,8 @@
               v-hasPermi="['admin/bridgeOrder/edit']"
             >人工审核</el-button>
           </div>
+<!--          <div v-else-if="scope.row.status > 1">操作已完成</div>-->
+          <div v-else> --- </div>
         </template>
       </el-table-column>
     </el-table>
