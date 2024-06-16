@@ -37,9 +37,18 @@
             @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item  prop="transactionHash">
+      <el-form-item  prop="inHash">
         <el-input
-          v-model="queryParams.transactionHash"
+          v-model="queryParams.inHash"
+          placeholder="转入TXID"
+          clearable
+          size="small"
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item  prop="outHash">
+        <el-input
+          v-model="queryParams.outHash"
           placeholder="转出TXID"
           clearable
           size="small"
@@ -292,7 +301,8 @@ export default {
         targetCoinAddress: undefined,
         sourceChainId: undefined,
         targetChainId: undefined,
-        transactionHash: undefined,
+        outHash: undefined,
+        inHash:undefined,
         status: undefined,
         startDate1:undefined,
         startDate2:undefined,
@@ -393,7 +403,8 @@ export default {
         targetCoinAddress: undefined,
         sourceChainId: undefined,
         targetChainId: undefined,
-        transactionHash: undefined,
+        outHash: undefined,
+        inHash:undefined,
         orderId: undefined,
         amount: undefined,
         status: undefined,

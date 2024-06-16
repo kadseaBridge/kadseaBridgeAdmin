@@ -123,3 +123,35 @@ func (s *payDetail) GetGasAndTxByOrderId(ctx context.Context, orderId string) (t
 	gas = result.PayGasFee
 	return
 }
+
+// GetInfoById 通过id获取
+func (s *payDetail) GetOrderIdByTx(ctx context.Context, tx string) (orderId string, err error) {
+	if tx == "" {
+		err = gerror.New("参数错误")
+		return
+	}
+
+	//m := dao.BridgeOrder.Ctx(ctx)
+	//
+	//m = m.Where(dao.PayDetail.Columns.TransactionHash+" LIKE ?", "%"+tx+"%")
+
+	// 创建一个临时结构体来接收只包含 Name 字段的数据
+	var result struct {
+		OrderId string
+	}
+
+	// 只选择 Name 字段
+	//err = dao.PayDetail.Ctx(ctx).Where(dao.PayDetail.Columns.TransactionHash, tx).Fields("order_id").Scan(&result)
+	err = dao.PayDetail.Ctx(ctx).Where(dao.PayDetail.Columns.TransactionHash+" LIKE ?", "%"+tx+"%").Fields("order_id").Scan(&result)
+	if err != nil {
+		g.Log().Error(err)
+		return
+	}
+	if result.OrderId == "" {
+		err = gerror.New("获取OrderId失败")
+		return
+	}
+
+	orderId = result.OrderId
+	return
+}

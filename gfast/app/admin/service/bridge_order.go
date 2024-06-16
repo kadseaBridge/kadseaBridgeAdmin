@@ -24,20 +24,20 @@ type bridgeOrder struct {
 
 var BridgeOrder = new(bridgeOrder)
 
-// GetList 获取任务列表
+// GetList 获取任务列表 " like ?"
 func (s *bridgeOrder) GetList(req *dao.BridgeOrderSearchReq) (total, page int, orderlist []*model.BridgeOrderRsp, err error) {
 	m := dao.BridgeOrder.Ctx(req.Ctx)
 	if req.SourceAddress != "" {
-		m = m.Where(dao.BridgeOrder.Columns.SourceAddress+" = ?", req.SourceAddress)
+		m = m.Where(dao.BridgeOrder.Columns.SourceAddress+" LIKE ?", "%"+req.SourceAddress+"%")
 	}
 	if req.TargetAddress != "" {
-		m = m.Where(dao.BridgeOrder.Columns.TargetAddress+" = ?", req.TargetAddress)
+		m = m.Where(dao.BridgeOrder.Columns.TargetAddress+" LIKE ?", "%"+req.TargetAddress+"%")
 	}
 	if req.SourceCoinAddress != "" {
-		m = m.Where(dao.BridgeOrder.Columns.SourceCoinAddress+" = ?", req.SourceCoinAddress)
+		m = m.Where(dao.BridgeOrder.Columns.SourceCoinAddress+" LIKE ?", "%"+req.SourceCoinAddress+"%")
 	}
 	if req.TargetCoinAddress != "" {
-		m = m.Where(dao.BridgeOrder.Columns.TargetCoinAddress+" = ?", req.TargetCoinAddress)
+		m = m.Where(dao.BridgeOrder.Columns.TargetCoinAddress+" LIKE ?", "%"+req.TargetCoinAddress+"%")
 	}
 	if req.SourceChainId != "" {
 		m = m.Where(dao.BridgeOrder.Columns.SourceChainId+" = ?", req.SourceChainId)
@@ -45,8 +45,20 @@ func (s *bridgeOrder) GetList(req *dao.BridgeOrderSearchReq) (total, page int, o
 	if req.TargetChainId != "" {
 		m = m.Where(dao.BridgeOrder.Columns.TargetChainId+" = ?", req.TargetChainId)
 	}
-	if req.TransactionHash != "" {
-		m = m.Where(dao.BridgeOrder.Columns.TransactionHash+" = ?", req.TransactionHash)
+
+	if req.OutHash != "" {
+		m = m.Where(dao.BridgeOrder.Columns.TransactionHash+" LIKE ?", "%"+req.OutHash+"%")
+	}
+
+	if req.InHash != "" {
+
+		orderId, err := PayDetail.GetOrderIdByTx(req.Ctx, req.InHash)
+		if err != nil {
+			err = gerror.New("获取orderId失败")
+		}
+
+		m = m.Where(dao.BridgeOrder.Columns.OrderId+" = ?", orderId)
+
 	}
 
 	if req.Status != 0 {
@@ -189,8 +201,19 @@ func (s *bridgeOrder) GetListAll(req *dao.BridgeOrderSearchReq) (total, page int
 	if req.TargetChainId != "" {
 		m = m.Where(dao.BridgeOrder.Columns.TargetChainId+" = ?", req.TargetChainId)
 	}
-	if req.TransactionHash != "" {
-		m = m.Where(dao.BridgeOrder.Columns.TransactionHash+" = ?", req.TransactionHash)
+	if req.OutHash != "" {
+		m = m.Where(dao.BridgeOrder.Columns.TransactionHash+" = ?", req.OutHash)
+	}
+
+	if req.InHash != "" {
+
+		orderId, err := PayDetail.GetOrderIdByTx(req.Ctx, req.InHash)
+		if err != nil {
+			err = gerror.New("获取orderId失败")
+		}
+
+		m = m.Where(dao.BridgeOrder.Columns.OrderId+" = ?", orderId)
+
 	}
 
 	if req.Status != 0 {
