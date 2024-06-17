@@ -179,13 +179,13 @@
       <el-table-column label="状态" align="center"  prop="status" :formatter="statusFormat" />
       <el-table-column label="发起时间" align="center" prop="createAt" width="180">
         <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.createAt, '{y}-{m}-{d}') }}</span>
+            <span>{{ parseTime(scope.row.createAt, '{y}-{m}-{d} {h}:{i}:{s}') }}</span>
         </template>
       </el-table-column>
       <el-table-column label="结束时间" align="center" prop="updateAt" width="180">
         <template slot-scope="scope">
         <span v-if="scope.row.status === 5">
-          {{ parseTime(scope.row.updateAt, '{y}-{m}-{d}') }}
+          {{ parseTime(scope.row.updateAt, '{y}-{m}-{d} {h}:{i}:{s}') }}
         </span>
           <span v-else>
           未完成..

@@ -420,7 +420,7 @@ func (s *bridgeOrder) ExportOrders(req *dao.BridgeOrderSearchReq) ([]byte, error
 		f.SetCellValue("Sheet1", fmt.Sprintf("L%d", i+2), order.InHash)
 		f.SetCellValue("Sheet1", fmt.Sprintf("M%d", i+2), order.CreateAt)
 		f.SetCellValue("Sheet1", fmt.Sprintf("N%d", i+2), order.UpdateAt)
-		f.SetCellValue("Sheet1", fmt.Sprintf("O%d", i+2), order.Status)
+		f.SetCellValue("Sheet1", fmt.Sprintf("O%d", i+2), getStatus(order.Status))
 	}
 
 	// 将 Excel 文件写入缓冲区
@@ -433,4 +433,20 @@ func (s *bridgeOrder) ExportOrders(req *dao.BridgeOrderSearchReq) ([]byte, error
 	g.Log().Info("Excel file created successfully")
 
 	return buf.Bytes(), nil
+}
+
+func getStatus(status int) string {
+	switch {
+	case status <= 1:
+		return "待审核"
+	case status > 1 && status <= 4:
+		return "进行中"
+	case status == 5:
+		return "已完成"
+	case status > 5:
+		return "跨链失败"
+	default:
+		return "未知状态"
+	}
+
 }
