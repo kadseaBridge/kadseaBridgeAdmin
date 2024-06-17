@@ -102,7 +102,7 @@
       @pagination="getList"
     />
     <!-- 添加或修改跨链币对对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body :close-on-click-modal="false">
+    <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body :close-on-click-modal="false" @open="handleDialogOpen">
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
       <el-form-item label="当前链" prop="sourceChainId">
           <el-select v-model="form.sourceChainId" placeholder="请选择当前链"  @change="onSourceChainChangeDialog">
@@ -116,24 +116,37 @@
       </el-form-item>
       <el-form-item label="币种" prop="sourceCoinAddress">
           <el-select v-model="form.sourceCoinAddress" placeholder="请选择币种" @change="onSourceCoinChangeDialog">
-              <el-option
-                  v-for="item in filteredCoinOptionsDialog"
-                  :key="item.key"
-                  :label="item.value"
-                  :value="item.value"
-              ></el-option>
+
+            <el-option
+              v-if="this.statusOptions && `${form.sourceCoinAddress}-${form.sourceChainId}` in coinAddressMap"
+              :key="`${form.sourceCoinAddress}-${form.sourceChainId}`"
+              :label="coinAddressMap[`${form.sourceCoinAddress}-${form.sourceChainId}`]"
+              :value="form.sourceCoinAddress"
+            ></el-option>
+            <el-option
+              v-for="item in filteredCoinOptionsDialog"
+              :key="item.key"
+              :label="item.value"
+              :value="item.value"
+            ></el-option>
 
           </el-select>
-
       </el-form-item>
-      <el-form-item label="对手链" prop="targetChainId">
-          <el-select v-model="form.targetChainId" placeholder="请选择对手链">
-              <el-option
-                  v-for="item in filteredTargetChainOptionsDialog"
-                  :key="item.key"
-                  :label="item.value"
-                  :value="item.key"
-              ></el-option>
+      <el-form-item label="对手链" prop="targetChainId" >
+          <el-select v-model="form.targetChainId" placeholder="请选择对手链" >
+            <el-option
+              v-if="this.statusOptions && form.targetChainId in targetChainIdMap"
+              :key="form.targetChainId"
+              :label="targetChainIdMap[form.targetChainId]"
+              :value="form.targetChainId"
+            ></el-option>
+            <el-option
+              v-for="item in filteredTargetChainOptionsDialog"
+              :key="item.key"
+              :label="item.value"
+              :value="item.key"
+            ></el-option>
+
           </el-select>
       </el-form-item>
 
@@ -202,6 +215,7 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      statusOptions: false, // 你的状态变量
       // sourceChainIdOptions关联表数据
       sourceChainIdOptions: [],
       // targetChainIdOptions关联表数据
@@ -225,6 +239,16 @@ export default {
       },
       // 表单参数
       form: {},
+      // TODO 待优化，需要重数据库中获取
+      targetChainIdMap: {
+        878: 'KAD',
+        97: 'BSC TESTNET',
+        421614:'Arbitrum Sepolia Testnet',
+        11155111:'ETH Sepolia Testnet'
+      },
+      coinAddressMap: {
+
+      },
       // 表单校验
       rules: {
         sourceChainId : [
@@ -288,6 +312,12 @@ export default {
             value: item.symbol,
             chainId: item.chainId // 确保每个币种有chainId字段
           }));
+
+          // 更新 coinAddressMap
+          this.coinAddressMap = res.data.list.reduce((map, item) => {
+            map[`${item.address}-${item.chainId}`] = item.symbol;
+            return map;
+          }, {});
         } else {
           console.error('Invalid coin items response:', res);
         }
@@ -342,6 +372,11 @@ export default {
         createAt: undefined,
       };
       this.resetForm("form");
+    },
+
+    // 打开对话框时设置状态
+    handleDialogOpen() {
+      this.statusOptions = true;
     },
 
     /** 搜索按钮操作 */
