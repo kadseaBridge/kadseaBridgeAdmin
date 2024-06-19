@@ -5,20 +5,21 @@
 // 生成人：jimmy
 // ==========================================================================
 
-
 package model
+
 import "github.com/gogf/gf/os/gtime"
+
 // Coin is the golang structure for table coin.
-type Coin struct {	
-         Id       int64         `orm:"id,primary" json:"id"`    //    
-         Name    string         `orm:"name" json:"name"`    // 代币名称    
-         Symbol    string         `orm:"symbol" json:"symbol"`    // 代币简称    
-         ChainId    string         `orm:"chainId" json:"chainId"`    // 链Id    
-         Address    string         `orm:"address" json:"address"`    // 代币地址    
-         IsEnable    int         `orm:"isEnable" json:"isEnable"`    // 是否上架    
-         CreateAt    *gtime.Time         `orm:"create_at" json:"createAt"`    //    
-         UpdateAt    *gtime.Time         `orm:"update_at" json:"updateAt"`    //    
-         TokenType    string         `orm:"type" json:"tokenType"`    // 币种类型    
-         Decimals    int         `orm:"decimals" json:"decimals"`    // 精度    
-         Icon    string         `orm:"icon" json:"icon"`    // 代币图标    
+type Coin struct {
+	Id       int64       `orm:"id,primary" json:"id"`      //
+	Name     string      `orm:"name" json:"name"`          // 代币名称
+	Symbol   string      `orm:"symbol" json:"symbol"`      // 代币简称
+	ChainId  string      `orm:"chainId" json:"chainId"`    // 链Id
+	Address  string      `orm:"address" json:"address"`    // 代币地址
+	IsEnable int         `orm:"isEnable" json:"isEnable"`  // 是否上架
+	CreateAt *gtime.Time `orm:"create_at" json:"createAt"` //
+	UpdateAt *gtime.Time `orm:"update_at" json:"updateAt"` //
+	Type     string      `orm:"type" json:"tokenType"`     // 币种类型
+	Decimals int         `orm:"decimals" json:"decimals"`  // 精度
+	Icon     string      `orm:"icon" json:"icon"`          // 代币图标
 }
