@@ -133,6 +133,36 @@ func (s *coin) GetNameByAddress(ctx context.Context, address string) (name strin
 	return
 }
 
+// GetInfoById 通过id获取
+func (s *coin) GetAddressBySymbol(ctx context.Context, symbol string) (addressList []string, err error) {
+	if symbol == "" {
+		err = gerror.New("参数错误")
+		return
+	}
+
+	// 创建一个临时结构体来接收只包含 Name 字段的数据
+	var results []struct {
+		Address string
+	}
+
+	// 只选择 Name 字段
+	//err = dao.Coin.Ctx(ctx).Where(dao.Coin.Columns.Symbol, symbol).Fields("address").Scan(&results)
+	err = dao.Coin.Ctx(ctx).Where(dao.Coin.Columns.Symbol+" LIKE ?", "%"+symbol+"%").Fields("address").Scan(&results)
+	if err != nil {
+		g.Log().Error(err)
+		return
+	}
+	if len(results) == 0 {
+		err = gerror.New("获取address失败")
+		return
+	}
+
+	for _, result := range results {
+		addressList = append(addressList, result.Address)
+	}
+	return
+}
+
 // Add 添加
 func (s *coin) Add(ctx context.Context, req *dao.CoinAddReq) (err error) {
 

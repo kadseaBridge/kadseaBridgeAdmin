@@ -33,11 +33,20 @@ func (s *bridgeOrder) GetList(req *dao.BridgeOrderSearchReq) (total, page int, o
 	if req.TargetAddress != "" {
 		m = m.Where(dao.BridgeOrder.Columns.TargetAddress+" LIKE ?", "%"+req.TargetAddress+"%")
 	}
+	// TODO  优化变量命名 CoinAddress 要统一改为 symbol
 	if req.SourceCoinAddress != "" {
-		m = m.Where(dao.BridgeOrder.Columns.SourceCoinAddress+" LIKE ?", "%"+req.SourceCoinAddress+"%")
+		addressList, err := Coin.GetAddressBySymbol(req.Ctx, req.SourceCoinAddress)
+		if err != nil {
+			err = gerror.New("获取coin address 失败")
+		}
+		m = m.Where(dao.BridgeOrder.Columns.SourceCoinAddress+" IN(?)", addressList)
 	}
 	if req.TargetCoinAddress != "" {
-		m = m.Where(dao.BridgeOrder.Columns.TargetCoinAddress+" LIKE ?", "%"+req.TargetCoinAddress+"%")
+		addressList, err := Coin.GetAddressBySymbol(req.Ctx, req.TargetCoinAddress)
+		if err != nil {
+			err = gerror.New("获取coin address 失败")
+		}
+		m = m.Where(dao.BridgeOrder.Columns.TargetCoinAddress+" IN(?)", addressList)
 	}
 	if req.SourceChainId != "" {
 		m = m.Where(dao.BridgeOrder.Columns.SourceChainId+" = ?", req.SourceChainId)
