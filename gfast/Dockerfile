@@ -1,5 +1,5 @@
 # 使用官方 Go 语言镜像作为构建阶段的基础镜像
-FROM golang:1.20 AS build
+FROM golang:1.21 AS build
 
 # 设置固定的项目路径
 WORKDIR /src
