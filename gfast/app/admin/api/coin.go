@@ -12,6 +12,7 @@ import (
 	"gfast/app/admin/dao"
 	"gfast/app/admin/service"
 	sysApi "gfast/app/system/api"
+	"gfast/utils"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/util/gvalid"
@@ -50,6 +51,11 @@ func (c *coin) Add(r *ghttp.Request) {
 	if err := r.Parse(&req); err != nil {
 		c.FailJsonExit(r, err.(gvalid.Error).FirstString())
 	}
+
+	if req.Address != "" && !utils.VerifyAddress(req.Address) {
+		c.FailJsonExit(r, "coin address error")
+	}
+
 	// 所有新添加的币种都是上架状态
 	req.IsEnable = 1
 	err := service.Coin.Add(r.GetCtx(), req)
@@ -76,6 +82,10 @@ func (c *coin) Edit(r *ghttp.Request) {
 	if err := r.Parse(&req); err != nil {
 		c.FailJsonExit(r, err.(gvalid.Error).FirstString())
 	}
+	if req.Address != "" && !utils.VerifyAddress(req.Address) {
+		c.FailJsonExit(r, "coin address error")
+	}
+
 	err := service.Coin.Edit(r.GetCtx(), req)
 	if err != nil {
 		c.FailJsonExit(r, err.Error())
