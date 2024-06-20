@@ -32,7 +32,7 @@ type sysUserColumns struct {
 	Birthday      string // 生日
 	UserPassword  string // 登录密码;cmf_password加密
 	UserSalt      string // 加密盐
-	Googleauth    string // google验证码
+	GoogleAuth    string // google验证码
 	UserStatus    string // 用户状态;0:禁用,1:正常,2:未验证
 	UserEmail     string // 用户登录邮箱
 	Sex           string // 性别;0:保密,1:男,2:女
@@ -64,7 +64,7 @@ var (
 			Birthday:      "birthday",
 			UserPassword:  "user_password",
 			UserSalt:      "user_salt",
-			Googleauth:    "googleauth",
+			GoogleAuth:    "googleAuth",
 			UserStatus:    "user_status",
 			UserEmail:     "user_email",
 			Sex:           "sex",

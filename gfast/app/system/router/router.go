@@ -121,6 +121,7 @@ func init() {
 				group.PUT("resetUserPwd", api.User.ResetUserPwd)
 				group.PUT("changeUserStatus", api.User.ChangeUserStatus)
 				group.DELETE("deleteUser", api.User.DeleteUser)
+				group.PUT("bindGoogleAuth", api.User.BindGoogleAuth)
 			})
 			//系统监控
 			group.Group("/monitor", func(group *ghttp.RouterGroup) {

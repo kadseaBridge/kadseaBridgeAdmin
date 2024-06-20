@@ -639,6 +639,13 @@ func (s *sysUser) GetPostsByUserId(userId uint64) ([]*model.SysPost, error) {
 	return posts, err
 }
 
+func (s *sysUser) UpdateGoogleAuth(userId uint64, secret string) error {
+	_, err := dao.SysUser.WherePri(userId).Update(g.Map{
+		dao.SysUser.Columns.GoogleAuth: secret,
+	})
+	return err
+}
+
 // EditUser 修改用户
 func (s *sysUser) EditUser(req *model.EditUserReq) (err error) {
 	if i, _ := dao.SysUser.Where("id!=? and mobile=?", req.UserId, req.Phonenumber).Count(); i != 0 {

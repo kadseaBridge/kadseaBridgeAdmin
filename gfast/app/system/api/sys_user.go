@@ -1,6 +1,7 @@
 package api
 
 import (
+	commonService "gfast/app/common/service"
 	"gfast/app/system/model"
 	"gfast/app/system/service"
 	"github.com/gogf/gf/frame/g"
@@ -237,4 +238,21 @@ func (c *user) DeleteUser(r *ghttp.Request) {
 	}
 
 	c.SusJsonExit(r, "删除成功")
+}
+
+// BindGoogleAuth 绑定谷歌验证码
+func (c *user) BindGoogleAuth(r *ghttp.Request) {
+	var apiReq *model.BindGoogleAuthReq
+	var ctx = r.GetCtx()
+	if err := r.Parse(&apiReq); err != nil {
+		c.FailJsonExit(r, err.(gvalid.Error).Current().Error())
+	}
+	userInfo, err := service.SysUser.GetAdminByUserId(ctx, apiReq.UserId)
+	if err != nil {
+		c.FailJsonExit(r, err.(gvalid.Error).Current().Error())
+	}
+	if !commonService.NewGoogleAuth2().Verify(userInfo.GoogleAuth, apiReq.GoogleCode) {
+		c.FailJsonExit(r, "谷歌验证码错误")
+	}
+
 }

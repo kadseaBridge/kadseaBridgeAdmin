@@ -8,17 +8,17 @@ import (
 	"gfast/app/system/model"
 	"gfast/app/system/service"
 	"gfast/library"
+	"github.com/gogf/gf/crypto/gmd5"
 	"github.com/gogf/gf/os/genv"
+	"github.com/gogf/gf/util/gconv"
 	"strings"
 
 	"github.com/goflyfox/gtoken/gtoken"
-	"github.com/gogf/gf/crypto/gmd5"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/os/gcache"
 	"github.com/gogf/gf/os/gtime"
-	"github.com/gogf/gf/util/gconv"
 	"github.com/gogf/gf/util/gvalid"
 	"github.com/mssola/user_agent"
 )
@@ -79,37 +79,69 @@ func (c *auth) login(r *ghttp.Request) (string, interface{}) {
 		})
 		c.FailJsonExit(r, err.Error())
 	} else if user != nil {
-		//如果用戶沒有綁定google验证码，就绑定
-		if user.Googleauth != "" {
-			//secret, png, err := commonService.NewGoogleAuth2().GenerateSecretAndQRCode(user.UserName)
-			//if err != nil {
-			//	c.FailJsonExit(r, "google验证码错误！")
+
+		// 用户未绑定谷歌验证码
+		if user.GoogleAuth != "" {
+			secret, qrCode, err := commonService.NewGoogleAuth2().GenerateSecretAndQRCode(user.UserName)
+			if err != nil {
+				c.FailJsonExit(r, "生成谷歌验证码错误")
+			}
+			// 绑定谷歌验证码
+			user.GoogleAuth = secret
+			//if err := service.SysUser.UpdateGoogleAuth(user.Id, secret); err != nil {
+			//	c.FailJsonExit(r, "绑定谷歌验证码错误")
 			//}
-
-			// 		c.SusJsonExit(r, g.Map{
-			//			"token": token,
-			//		})
-		}
-
-		r.SetParam("userInfo", user)
-		//更新用户登录记录 写入日志信息
-		service.SysUser.UpdateLoginInfo(user.Id, apiReq.Username, ip, userAgent, "登录成功", "系统后台")
-		var keys string
-		if MultiLogin {
-			keys = gconv.String(user.Id) + "-" + gmd5.MustEncryptString(user.UserName) + gmd5.MustEncryptString(user.UserPassword+ip)
+			c.SusJsonExit(r, g.Map{
+				"message":      "请绑定谷歌验证码",
+				"googleQrCode": qrCode,
+			})
 		} else {
-			keys = gconv.String(user.Id) + "-" + gmd5.MustEncryptString(user.UserName) + gmd5.MustEncryptString(user.UserPassword)
+			// 验证谷歌验证码
+			if !commonService.NewGoogleAuth2().Verify(user.GoogleAuth, apiReq.GoogleCode) {
+				c.FailJsonExit(r, "谷歌验证码错误")
+			}
+			r.SetParam("userInfo", user)
+			service.SysUser.UpdateLoginInfo(user.Id, apiReq.Username, ip, userAgent, "登录成功", "系统后台")
+			var keys string
+			if MultiLogin {
+				keys = gconv.String(user.Id) + "-" + gmd5.MustEncryptString(user.UserName) + gmd5.MustEncryptString(user.UserPassword+ip)
+			} else {
+				keys = gconv.String(user.Id) + "-" + gmd5.MustEncryptString(user.UserName) + gmd5.MustEncryptString(user.UserPassword)
+			}
+			return keys, user
 		}
-		return keys, user
-	}
 
+		//r.SetParam("userInfo", user)
+		////更新用户登录记录 写入日志信息
+		//service.SysUser.UpdateLoginInfo(user.Id, apiReq.Username, ip, userAgent, "登录成功", "系统后台")
+		//var keys string
+		//if MultiLogin {
+		//	keys = gconv.String(user.Id) + "-" + gmd5.MustEncryptString(user.UserName) + gmd5.MustEncryptString(user.UserPassword+ip)
+		//} else {
+		//	keys = gconv.String(user.Id) + "-" + gmd5.MustEncryptString(user.UserName) + gmd5.MustEncryptString(user.UserPassword)
+		//}
+		//return keys, user
+
+	}
 	return "", nil
+
 }
 
-// google绑定
-// func (c *auth) login(r *ghttp.Request) (string, interface{})
-
-// google验证
+//func (c *auth) BindGoogleAuth(r *ghttp.Request) {
+//	var apiReq *model.BindGoogleAuthReq
+//	var ctx = r.GetCtx()
+//	if err := r.Parse(&apiReq); err != nil {
+//		c.FailJsonExit(r, err.(gvalid.Error).Current().Error())
+//	}
+//	userInfo, err := service.SysUser.GetAdminByUserId(ctx, apiReq.UserId)
+//	if err != nil {
+//		c.FailJsonExit(r, err.(gvalid.Error).Current().Error())
+//	}
+//	if !commonService.NewGoogleAuth2().Verify(userInfo.GoogleAuth, apiReq.GoogleCode) {
+//		c.FailJsonExit(r, "谷歌验证码错误")
+//	}
+//
+//}
 
 // 登录成功返回
 func (c *auth) loginAfter(r *ghttp.Request, respData gtoken.Resp) {
