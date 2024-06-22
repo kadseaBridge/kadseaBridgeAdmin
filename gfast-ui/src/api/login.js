@@ -48,3 +48,11 @@ export function getCodeImg() {
     method: 'get'
   })
 }
+
+export function verifyGoogleCode(username, code) {
+  return request({
+    url: '/system/user/verifyGoogleCode',
+    method: 'post',
+    data: { username, code }
+  })
+}

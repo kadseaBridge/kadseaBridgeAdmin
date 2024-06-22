@@ -28,6 +28,6 @@ func (this *GoogleAuth2) GenerateSecretAndQRCode(userName string) (string, []byt
 	return secret, png, nil
 }
 
-func (this *GoogleAuth2) Verify(code string, secret string) bool {
+func (this *GoogleAuth2) VerifyCode(code string, secret string) bool {
 	return totp.Validate(code, secret)
 }

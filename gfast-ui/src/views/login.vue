@@ -58,21 +58,57 @@
     </el-form>
 
     <!-- 谷歌验证码对话框 -->
-    <el-dialog title="绑定谷歌验证码" :visible.sync="googleDialogVisible">
-      <div v-if="googleQrCode">
-        <img :src="googleQrCode" alt="Google QR Code" />
-        <el-input v-model="googleCode" placeholder="请输入谷歌验证码" />
-      </div>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="googleDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="bindGoogleAuth">绑定</el-button>
-      </span>
-    </el-dialog>
+<!--    <el-dialog title="绑定谷歌验证码" :visible.sync="googleDialogVisible">-->
+<!--      <div v-if="googleQrCode">-->
+<!--        <img :src="googleQrCode" alt="Google QR Code" />-->
+<!--        <el-input v-model="googleCode" placeholder="请输入谷歌验证码" />-->
+<!--      </div>-->
+<!--      <span slot="footer" class="dialog-footer">-->
+<!--        <el-button @click="googleDialogVisible = false">取消</el-button>-->
+<!--        <el-button type="primary" @click="bindGoogleAuth">绑定</el-button>-->
+<!--      </span>-->
+<!--    </el-dialog>-->
 
     <!--  底部  -->
     <div class="el-login-footer">
       <span>Copyright © 2021-2023 g-fast.cn All Rights Reserved.</span>
     </div>
+
+    <!-- 谷歌验证绑定对话框 -->
+    <el-dialog
+      title="绑定谷歌验证"
+      :visible.sync="googleAuthDialogVisible"
+      width="30%"
+      @close="handleGoogleAuthDialogClose"
+    >
+      <div v-if="googleAuthQRCode">
+<!--        <img :src="googleAuthQRCode" alt="Google Auth QR Code" style="width: 100%; height: auto;">-->
+        <img :src="'data:image/png;base64,' + googleAuthQRCode" alt="QR Code" style="width: 100%; height: auto;" />
+<!--        <vue-qrcode :text="googleAuthQRCode" :size="200"></vue-qrcode>-->
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="googleAuthDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="confirmGoogleAuth">确认</el-button>
+      </span>
+    </el-dialog>
+
+    <!-- 谷歌验证码输入对话框 -->
+    <el-dialog
+      title="谷歌验证"
+      :visible.sync="googleCodeDialogVisible"
+      width="30%"
+      @close="handleGoogleCodeDialogClose"
+    >
+      <el-input
+        v-model="googleCode"
+        placeholder="请输入谷歌验证码"
+        @keyup.enter.native="verifyGoogleCode"
+      />
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="googleCodeDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="verifyGoogleCode">确认</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -80,17 +116,25 @@
 import { getCodeImg } from "@/api/login";
 import Cookies from "js-cookie";
 import { encrypt, decrypt } from '@/utils/jsencrypt'
+// import VueQrcode from 'vue-qrcode-component'
 import { bindGoogleAuth } from "@/api/system/user";
 
 export default {
   name: "Login",
+  // components: {
+  //   VueQrcode
+  // },
   data() {
     return {
       codeUrl: "",
       cookiePassword: "",
-      googleQrCode: "",
-      googleCode: "",
-      googleDialogVisible: false,
+      googleAuthQRCode: "", // 添加谷歌二维码的URL
+      googleCode: "", // 添加谷歌验证码输入框的内容
+      googleAuthDialogVisible: false, // 控制谷歌验证绑定对话框的显示
+      googleCodeDialogVisible: false, // 控制谷歌验证码输入对话框的显示
+      googleAuthRequired:false,
+      bindGoogleAuth:false,
+      qrcode:"",
       loginForm: {
         // username: "admin",
         // password: "123456",
@@ -158,29 +202,28 @@ export default {
             Cookies.remove("password");
             Cookies.remove('rememberMe');
           }
-          console.log(this.loginForm)
+          // console.log(this.loginForm)
           this.$store
             .dispatch("Login", this.loginForm)
-            // .then(() => {
-            //   this.$router.push({ path: this.redirect || "/" });
-            // })
             .then(response => {
-              console.log("显示谷歌二维码对话框1",response.data.googleQrCode)
-              if (response.data.googleQrCode) {
-
-                console.log("显示谷歌二维码对话框2")
-                // 显示谷歌二维码对话框
-                this.googleQrCode = response.data.googleQrCode;
-                this.googleDialogVisible = true;
+              try {
+                console.log("处理 Login action 返回的数据:", response)
+                if (response.bindGoogleAuth) {
+                  this.googleAuthQRCode = response.qrcode;
+                  this.googleAuthDialogVisible = true;
+                  console.log("显示谷歌二维码:", this.googleAuthQRCode)
+                } else if (response.googleAuthRequired) {
+                  this.googleCodeDialogVisible = true;
+                } else {
+                  this.$router.push({ path: this.redirect || "/" });
+                }
+              } catch (e) {
+                console.error("then 块内处理数据时发生错误:", e)
                 this.loading = false;
-              } else {
-                // 跳转到首页
-                console.log("跳转到首页")
-                this.$router.push({ path: this.redirect || "/" });
               }
             })
             .catch(() => {
-              console.log("调用login失败")
+              console.log("调用catch分支")
               this.loading = false;
               this.getCode();
             });
@@ -188,19 +231,47 @@ export default {
       });
     },
 
-    bindGoogleAuth() {
-      if (!this.googleCode) {
-        this.$message.error("请输入谷歌验证码");
-        return;
-      }
-      bindGoogleAuth({ code: this.googleCode }).then(() => {
-        this.$message.success("谷歌验证码绑定成功");
-        this.googleDialogVisible = false;
-        this.handleLogin(); // 重新登录
-      }).catch(() => {
-        this.$message.error("谷歌验证码绑定失败");
-      });
+    verifyGoogleCode() {
+      this.$store
+        .dispatch('VerifyGoogleCode', { username: this.loginForm.username, code: this.googleCode })
+        .then(() => {
+          this.googleCodeDialogVisible = false;
+          this.$router.push({ path: this.redirect || "/" });
+        })
+        .catch(() => {
+          this.loading = false;
+          this.getCode();
+        });
+    },
+    confirmGoogleAuth() {
+      // 验证谷歌二维码绑定
+      this.googleAuthDialogVisible = false;
+      this.googleCodeDialogVisible = true;
+    },
+    handleGoogleAuthDialogClose() {
+      this.googleAuthDialogVisible = false;
+      this.loading = false;
+      this.getCode();
+    },
+    handleGoogleCodeDialogClose() {
+      this.googleCodeDialogVisible = false;
+      this.loading = false;
+      this.getCode();
     }
+
+    // bindGoogleAuth() {
+    //   if (!this.googleCode) {
+    //     this.$message.error("请输入谷歌验证码");
+    //     return;
+    //   }
+    //   bindGoogleAuth({ code: this.googleCode }).then(() => {
+    //     this.$message.success("谷歌验证码绑定成功");
+    //     this.googleDialogVisible = false;
+    //     this.handleLogin(); // 重新登录
+    //   }).catch(() => {
+    //     this.$message.error("谷歌验证码绑定失败");
+    //   });
+    // }
   }
 };
 </script>

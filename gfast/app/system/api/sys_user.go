@@ -1,7 +1,6 @@
 package api
 
 import (
-	commonService "gfast/app/common/service"
 	"gfast/app/system/model"
 	"gfast/app/system/service"
 	"github.com/gogf/gf/frame/g"
@@ -240,19 +239,43 @@ func (c *user) DeleteUser(r *ghttp.Request) {
 	c.SusJsonExit(r, "删除成功")
 }
 
-// BindGoogleAuth 绑定谷歌验证码
-func (c *user) BindGoogleAuth(r *ghttp.Request) {
-	var apiReq *model.BindGoogleAuthReq
-	var ctx = r.GetCtx()
-	if err := r.Parse(&apiReq); err != nil {
-		c.FailJsonExit(r, err.(gvalid.Error).Current().Error())
-	}
-	userInfo, err := service.SysUser.GetAdminByUserId(ctx, apiReq.UserId)
-	if err != nil {
-		c.FailJsonExit(r, err.(gvalid.Error).Current().Error())
-	}
-	if !commonService.NewGoogleAuth2().Verify(userInfo.GoogleAuth, apiReq.GoogleCode) {
-		c.FailJsonExit(r, "谷歌验证码错误")
-	}
-
-}
+//func (c *user) VerifyGoogleAuth(r *ghttp.Request) (string, interface{}) {
+//	var ctx = r.GetCtx()
+//	var apiReq *model.GoogleAuthVerifyReq
+//	if err := r.Parse(&apiReq); err != nil {
+//		c.FailJsonExit(r, err.(gvalid.Error).Current().Error())
+//	}
+//
+//	ip := library.GetClientIp(r)
+//	userAgent := r.Header.Get("User-Agent")
+//	userInfo, err := service.SysUser.GetAdminByUserId(ctx, apiReq.UserId)
+//	if err != nil {
+//		c.FailJsonExit(r, err.(gvalid.Error).Current().Error())
+//	}
+//	if userInfo == nil {
+//		c.FailJsonExit(r, "用户信息缺失")
+//	}
+//
+//	// 假设这里有验证谷歌验证码的逻辑，并且验证通过
+//	if commonService.NewGoogleAuth2().VerifyCode(userInfo.GoogleAuth, apiReq.GoogleCode) {
+//		// 验证通过，设置用户信息
+//		r.SetParam("userInfo", userInfo)
+//		//更新用户登录记录 写入日志信息
+//		service.SysUser.UpdateLoginInfo(userInfo.Id, userInfo.UserName, ip, userAgent, "登录成功", "系统后台")
+//		var keys string
+//		if MultiLogin {
+//			keys = gconv.String(userInfo.Id) + "-" + gmd5.MustEncryptString(userInfo.UserName) + gmd5.MustEncryptString(userInfo.UserPassword+ip)
+//		} else {
+//			keys = gconv.String(userInfo.Id) + "-" + gmd5.MustEncryptString(userInfo.UserName) + gmd5.MustEncryptString(userInfo.UserPassword)
+//		}
+//		return keys, userInfo
+//		//c.SusJsonExit(r, g.Map{
+//		//	"loginSuccess": true,
+//		//	"userInfo":     userInfo,
+//		//})
+//	} else {
+//		c.FailJsonExit(r, "谷歌验证码错误")
+//	}
+//
+//	return "", nil
+//}

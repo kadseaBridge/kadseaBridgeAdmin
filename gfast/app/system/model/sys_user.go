@@ -23,7 +23,7 @@ type LoginParamsReq struct {
 	VerifyKey  string `p:"verifyKey"`
 }
 
-type BindGoogleAuthReq struct {
+type GoogleAuthVerifyReq struct {
 	UserId     uint64 `p:"userId" v:"required#userId不能为空"`
 	GoogleCode string `p:"googleCode" v:"required#googleCode不能为空" `
 }

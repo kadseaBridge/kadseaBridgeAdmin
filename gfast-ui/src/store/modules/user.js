@@ -1,4 +1,4 @@
-import { login, logout, getInfo } from '@/api/login'
+import { login, logout, getInfo,verifyGoogleCode } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import {getUpFileUrl} from "@/utils/ruoyi";
 
@@ -38,13 +38,44 @@ const user = {
       const code = userInfo.code
       const uuid = userInfo.uuid
       return new Promise((resolve, reject) => {
-        login(username, password, code, uuid,google).then(res => {
-          setToken(res.data.token)
-          commit('SET_TOKEN', res.data.token)
-          resolve()
-        }).catch(error => {
-          reject(error)
-        })
+        login(username, password, code, uuid, google)
+          .then(response => {
+            const { data } = response
+            console.log("收到服务器返回的数据:", data)
+
+            try {
+              if (data.bindGoogleAuth || data.googleAuthRequired) {
+                console.log("返回谷歌验证数据：", data)
+                resolve(data) // 返回数据以便前端处理谷歌验证
+              } else {
+                commit('SET_TOKEN', data.token)
+                setToken(data.token)
+                resolve(data)
+              }
+            } catch (error) {
+              console.error("处理服务器返回的数据时发生错误:", error)
+              reject(error)
+            }
+          })
+          .catch(error => {
+            console.error("Login action 捕获到错误:", error)
+            reject(error)
+          })
+      })
+    },
+
+    VerifyGoogleCode({ commit }, { username, code }) {
+      return new Promise((resolve, reject) => {
+        verifyGoogleCode(username, code)
+          .then(response => {
+            const { data } = response
+            commit('SET_TOKEN', data.token)
+            setToken(data.token)
+            resolve(response)
+          })
+          .catch(error => {
+            reject(error)
+          })
       })
     },
 
@@ -92,7 +123,17 @@ const user = {
         removeToken()
         resolve()
       })
-    }
+    },
+
+    // VerifyGoogleCode({ commit }, { username, code }) {
+    //   return new Promise((resolve, reject) => {
+    //     verifyGoogleCode(username, code).then(response => {
+    //       resolve(response)
+    //     }).catch(error => {
+    //       reject(error)
+    //     })
+    //   })
+    // },
   }
 }
 
