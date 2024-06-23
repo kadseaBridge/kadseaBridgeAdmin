@@ -275,7 +275,7 @@ func (c *user) Login1(r *ghttp.Request) {
 	} else if user != nil {
 		// 用户未绑定谷歌验证码
 		if user.GoogleAuth == "" {
-			secret, qrCode, err := commonService.NewGoogleAuth2().GenerateSecretAndQRCode(user.UserName)
+			secret, qrCode, err := commonService.NewGoogleAuth().GenerateSecretAndQRCode(user.UserName)
 			if err != nil {
 				c.FailJsonExit(r, "生成谷歌验证码失败")
 			}

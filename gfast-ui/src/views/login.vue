@@ -81,7 +81,7 @@
         @keyup.enter.native="verifyGoogleCode"
       />
       <span slot="footer" class="dialog-footer">
-        <el-button @click="googleCodeDialogVisible = false">取消</el-button>
+        <el-button @click="googleCodeDialogVisible = false;googleCode = '' "  >取消</el-button>
         <el-button type="primary" @click="verifyGoogleCode">确认</el-button>
       </span>
     </el-dialog>

@@ -67,7 +67,7 @@ func (c *auth) VerifyGoogleCode(r *ghttp.Request) (string, interface{}) {
 	}
 
 	// 假设这里有验证谷歌验证码的逻辑，并且验证通过
-	if commonService.NewGoogleAuth2().VerifyCode(apiReq.GoogleCode, userInfo.GoogleAuth) {
+	if commonService.NewGoogleAuth().VerifyCode(apiReq.GoogleCode, userInfo.GoogleAuth) {
 		// 验证通过，设置用户信息
 		r.SetParam("userInfo", userInfo)
 		//更新用户登录记录 写入日志信息
