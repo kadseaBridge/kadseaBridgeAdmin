@@ -244,7 +244,7 @@ func (c *user) DeleteUser(r *ghttp.Request) {
 }
 
 // Login   后台用户登陆验证
-func (c *user) Login(r *ghttp.Request) {
+func (c *user) Login1(r *ghttp.Request) {
 	var ctx = r.GetCtx()
 	var apiReq *model.LoginParamsReq
 	if err := r.Parse(&apiReq); err != nil {

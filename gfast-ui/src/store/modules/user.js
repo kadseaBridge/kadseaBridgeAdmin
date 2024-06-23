@@ -1,4 +1,4 @@
-import { login, logout, getInfo,verifyGoogleCode } from '@/api/login'
+import {logout, getInfo, verifyGoogleCode, login1} from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import {getUpFileUrl} from "@/utils/ruoyi";
 
@@ -31,21 +31,17 @@ const user = {
 
   actions: {
     // 登录
-    Login({ commit }, userInfo) {
+    Login1({ commit }, userInfo) {
       const username = userInfo.username.trim()
       const password = userInfo.password
-      const google = userInfo.google
       const code = userInfo.code
       const uuid = userInfo.uuid
       return new Promise((resolve, reject) => {
-        login(username, password, code, uuid, google)
+        login1(username, password, code, uuid)
           .then(response => {
             const { data } = response
-            console.log("收到服务器返回的数据:", data)
-
             try {
               if (data.bindGoogleAuth || data.googleAuthRequired) {
-                console.log("返回谷歌验证数据：", data)
                 resolve(data) // 返回数据以便前端处理谷歌验证
               } else {
                 commit('SET_TOKEN', data.token)
@@ -53,12 +49,10 @@ const user = {
                 resolve(data)
               }
             } catch (error) {
-              console.error("处理服务器返回的数据时发生错误:", error)
               reject(error)
             }
           })
           .catch(error => {
-            console.error("Login action 捕获到错误:", error)
             reject(error)
           })
       })
@@ -125,15 +119,6 @@ const user = {
       })
     },
 
-    // VerifyGoogleCode({ commit }, { username, code }) {
-    //   return new Promise((resolve, reject) => {
-    //     verifyGoogleCode(username, code).then(response => {
-    //       resolve(response)
-    //     }).catch(error => {
-    //       reject(error)
-    //     })
-    //   })
-    // },
   }
 }
 

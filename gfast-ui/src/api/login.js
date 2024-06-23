@@ -9,19 +9,16 @@ import request from '@/utils/request'
 
 
 // 登录方法
-export function login(username, password, code, uuid,google) {
-  console.log(username, password,google, code, uuid)
+export function login1(username, password, code, uuid) {
+  console.log(username, password, code, uuid)
   const data = {
     username,
     password,
-    googlecode:google,
     verifyCode:code,
     verifyKey:uuid
   }
   return request({
-    // /system/auth/login1
-    // url: '/system/login',
-    url: '/system/auth/login',
+    url: '/system/auth/login1',
     method: 'post',
     data: data
   })
@@ -53,7 +50,7 @@ export function getCodeImg() {
 
 export function verifyGoogleCode(username, googleCode) {
   return request({
-    url: '/system/login',
+    url: '/system/verifyGoogleCode',
     method: 'post',
     data: { username, googleCode }
   })

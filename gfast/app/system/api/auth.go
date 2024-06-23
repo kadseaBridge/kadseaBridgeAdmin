@@ -29,109 +29,23 @@ var (
 	Auth       = new(auth)
 	MultiLogin = g.Cfg().GetBool("gToken.system.MultiLogin")
 	GfToken    = &gtoken.GfToken{
-		CacheMode:      g.Cfg().GetInt8("gToken.system.CacheMode"),
-		CacheKey:       g.Cfg().GetString("gToken.system.CacheKey"),
-		Timeout:        g.Cfg().GetInt("gToken.system.Timeout"),
-		MaxRefresh:     g.Cfg().GetInt("gToken.system.MaxRefresh"),
-		TokenDelimiter: g.Cfg().GetString("gToken.system.TokenDelimiter"),
-		EncryptKey:     g.Cfg().GetBytes("gToken.system.EncryptKey"),
-		AuthFailMsg:    g.Cfg().GetString("gToken.system.AuthFailMsg"),
-		MultiLogin:     MultiLogin,
-		LoginPath:      "/login",
-		//LoginBeforeFunc: Auth.login,
-		//LoginPath:        "/system/auth/verifyGoogleCode",
+		CacheMode:        g.Cfg().GetInt8("gToken.system.CacheMode"),
+		CacheKey:         g.Cfg().GetString("gToken.system.CacheKey"),
+		Timeout:          g.Cfg().GetInt("gToken.system.Timeout"),
+		MaxRefresh:       g.Cfg().GetInt("gToken.system.MaxRefresh"),
+		TokenDelimiter:   g.Cfg().GetString("gToken.system.TokenDelimiter"),
+		EncryptKey:       g.Cfg().GetBytes("gToken.system.EncryptKey"),
+		AuthFailMsg:      g.Cfg().GetString("gToken.system.AuthFailMsg"),
+		MultiLogin:       MultiLogin,
+		LoginPath:        "/verifyGoogleCode",
 		LoginBeforeFunc:  Auth.VerifyGoogleCode,
 		LoginAfterFunc:   Auth.loginAfter,
 		LogoutPath:       "/logout",
-		AuthExcludePaths: g.SliceStr{"/login", "/system/auth/login", "/system/auth/verifyGoogleCode"},
+		AuthExcludePaths: g.SliceStr{"/verifyGoogleCode", "/system/auth/login1"},
 		AuthAfterFunc:    Auth.authAfterFunc,
 		LogoutBeforeFunc: Auth.loginOut,
 	}
 )
-
-// Login   后台用户登陆验证
-//func (c *auth) login(r *ghttp.Request) (string, interface{}) {
-//	var ctx = r.GetCtx()
-//	var apiReq *model.LoginParamsReq
-//	if err := r.Parse(&apiReq); err != nil {
-//		c.FailJsonExit(r, err.(gvalid.Error).Current().Error())
-//	}
-//	//判断验证码是否正确
-//	debug := genv.GetWithCmd("gf.debug")
-//	fmt.Println(apiReq.VerifyCode)
-//	if debug.Int() != 1 {
-//		if !commonService.Captcha.VerifyString(apiReq.VerifyKey, apiReq.VerifyCode) {
-//			c.FailJson(true, r, "验证码输入错误")
-//		}
-//	}
-//
-//	ip := library.GetClientIp(r)
-//	userAgent := r.Header.Get("User-Agent")
-//	if user, err := service.SysUser.GetAdminUserByUsernamePassword(ctx, apiReq); err != nil {
-//		//保存日志（异步）
-//		service.SysLoginLog.Invoke(&model.LoginLogParams{
-//			Status:    0,
-//			Username:  apiReq.Username,
-//			Ip:        ip,
-//			UserAgent: userAgent,
-//			Msg:       err.Error(),
-//			Module:    "系统后台",
-//		})
-//		c.FailJsonExit(r, err.Error())
-//	} else if user != nil {
-//
-//		// 用户未绑定谷歌验证码
-//		if user.GoogleAuth == "" {
-//			secret, qrCode, err := commonService.NewGoogleAuth2().GenerateSecretAndQRCode(user.UserName)
-//			if err != nil {
-//				c.FailJsonExit(r, "生成谷歌验证码失败")
-//			}
-//			// 绑定谷歌验证码
-//			user.GoogleAuth = secret
-//			if err := service.SysUser.UpdateGoogleAuth(user.Id, secret); err != nil {
-//				c.FailJsonExit(r, "绑定谷歌验证码密钥失败")
-//			}
-//			c.SusJsonExit(r, g.Map{
-//				"bindGoogleAuth": true,
-//				"qrcode":         qrCode,
-//			})
-//		} else {
-//			// 验证谷歌验证码
-//			//if !commonService.NewGoogleAuth2().Verify(user.GoogleAuth, apiReq.GoogleCode) {
-//			//	c.FailJsonExit(r, "谷歌验证码错误")
-//			//}
-//			//r.SetParam("userInfo", user)
-//			//service.SysUser.UpdateLoginInfo(user.Id, apiReq.Username, ip, userAgent, "登录成功", "系统后台")
-//			//var keys string
-//			//if MultiLogin {
-//			//	keys = gconv.String(user.Id) + "-" + gmd5.MustEncryptString(user.UserName) + gmd5.MustEncryptString(user.UserPassword+ip)
-//			//} else {
-//			//	keys = gconv.String(user.Id) + "-" + gmd5.MustEncryptString(user.UserName) + gmd5.MustEncryptString(user.UserPassword)
-//			//}
-//			//return keys, user
-//
-//			//r.SetParam("userInfo", user)
-//
-//			c.SusJsonExit(r, g.Map{
-//				"googleAuthRequired": true,
-//			})
-//		}
-//
-//		//r.SetParam("userInfo", user)
-//		////更新用户登录记录 写入日志信息
-//		//service.SysUser.UpdateLoginInfo(user.Id, apiReq.Username, ip, userAgent, "登录成功", "系统后台")
-//		//var keys string
-//		//if MultiLogin {
-//		//	keys = gconv.String(user.Id) + "-" + gmd5.MustEncryptString(user.UserName) + gmd5.MustEncryptString(user.UserPassword+ip)
-//		//} else {
-//		//	keys = gconv.String(user.Id) + "-" + gmd5.MustEncryptString(user.UserName) + gmd5.MustEncryptString(user.UserPassword)
-//		//}
-//		//return keys, user
-//
-//	}
-//	return "", nil
-//
-//}
 
 // VerifyGoogleCode 成功验证谷歌验证码后再执行
 // 此处假设你在其他地方完成了谷歌验证的逻辑，然后调用这个函数
