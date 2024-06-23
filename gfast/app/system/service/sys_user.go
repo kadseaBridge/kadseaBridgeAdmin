@@ -639,10 +639,19 @@ func (s *sysUser) GetPostsByUserId(userId uint64) ([]*model.SysPost, error) {
 	return posts, err
 }
 
-func (s *sysUser) UpdateGoogleAuth(userId uint64, secret string) error {
+func (s *sysUser) UpdateGoogleAuthById(userId uint64, secret string) error {
 	_, err := dao.SysUser.WherePri(userId).Update(g.Map{
 		dao.SysUser.Columns.GoogleAuth: secret,
 	})
+	return err
+}
+
+func (s *sysUser) UpdateGoogleAuthByName(name string, secret string) error {
+	_, err := dao.SysUser.
+		Where(dao.SysUser.Columns.UserName, name).
+		Update(g.Map{
+			dao.SysUser.Columns.GoogleAuth: secret,
+		})
 	return err
 }
 

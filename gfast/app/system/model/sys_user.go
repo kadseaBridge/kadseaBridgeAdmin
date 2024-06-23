@@ -28,6 +28,10 @@ type GoogleAuthVerifyReq struct {
 	GoogleCode string `p:"googleCode" v:"required#googleCode不能为空" `
 }
 
+type UnbindGoogleAuthReq struct {
+	UserName string `p:"userName" v:"required#userName不能为空"`
+}
+
 // LoginUserRes 登录返回
 type LoginUserRes struct {
 	Id           uint64 `orm:"id,primary"       json:"id"`           //

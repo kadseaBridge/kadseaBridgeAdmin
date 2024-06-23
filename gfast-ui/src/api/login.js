@@ -55,3 +55,12 @@ export function verifyGoogleCode(username, googleCode) {
     data: { username, googleCode }
   })
 }
+
+// 取消绑定谷歌验证
+export function unBind(userName) {
+  return request({
+    url: '/system/auth/unBind',
+    method: 'post',
+    data: { userName }
+  })
+}

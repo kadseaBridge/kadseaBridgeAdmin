@@ -41,7 +41,7 @@ var (
 		LoginBeforeFunc:  Auth.VerifyGoogleCode,
 		LoginAfterFunc:   Auth.loginAfter,
 		LogoutPath:       "/logout",
-		AuthExcludePaths: g.SliceStr{"/verifyGoogleCode", "/system/auth/login1"},
+		AuthExcludePaths: g.SliceStr{"/verifyGoogleCode", "/system/auth/login1", "/system/auth/unBind"},
 		AuthAfterFunc:    Auth.authAfterFunc,
 		LogoutBeforeFunc: Auth.loginOut,
 	}

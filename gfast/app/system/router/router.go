@@ -123,6 +123,7 @@ func init() {
 				group.PUT("changeUserStatus", api.User.ChangeUserStatus)
 				group.DELETE("deleteUser", api.User.DeleteUser)
 				group.POST("login1", api.User.Login1)
+				group.POST("unBind", api.User.UnBind)
 			})
 			//系统监控
 			group.Group("/monitor", func(group *ghttp.RouterGroup) {

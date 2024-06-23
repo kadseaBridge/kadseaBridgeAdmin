@@ -63,7 +63,8 @@
         <img :src="'data:image/png;base64,' + googleAuthQRCode" alt="QR Code" style="width: 100%; height: auto;"/>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="googleAuthDialogVisible = false">取消</el-button>
+<!--        <el-button @click="googleAuthDialogVisible = false">取消</el-button>-->
+        <el-button @click="unBind">取消</el-button>
         <el-button type="primary" @click="confirmGoogleAuth">确认</el-button>
       </span>
     </el-dialog>
@@ -214,6 +215,21 @@ export default {
 
       this.googleCode = ""
     },
+
+    unBind(){
+      this.$store.dispatch('UnBind',{username: this.loginForm.username})
+        .then(() => {
+          // this.googleCodeDialogVisible = false;
+          this.googleAuthDialogVisible = false
+          this.$router.push({path: this.redirect || "/"});
+        })
+        .catch(() => {
+          this.loading = false;
+          this.getCode();
+        });
+    },
+
+
     confirmGoogleAuth() {
       // 验证谷歌二维码绑定
       this.googleAuthDialogVisible = false;

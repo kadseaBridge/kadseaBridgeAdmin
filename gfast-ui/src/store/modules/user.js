@@ -1,4 +1,4 @@
-import {logout, getInfo, verifyGoogleCode, login1} from '@/api/login'
+import {logout, getInfo, verifyGoogleCode, login1, unBind} from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import {getUpFileUrl} from "@/utils/ruoyi";
 
@@ -65,6 +65,18 @@ const user = {
             const { data } = response
             commit('SET_TOKEN', data.token)
             setToken(data.token)
+            resolve(response)
+          })
+          .catch(error => {
+            reject(error)
+          })
+      })
+    },
+
+    UnBind({ commit }, { username }) {
+      return new Promise((resolve, reject) => {
+        unBind(username)
+          .then(response => {
             resolve(response)
           })
           .catch(error => {

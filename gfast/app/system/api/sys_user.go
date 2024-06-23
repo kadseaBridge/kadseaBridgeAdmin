@@ -281,7 +281,7 @@ func (c *user) Login1(r *ghttp.Request) {
 			}
 			// 绑定谷歌验证码
 			user.GoogleAuth = secret
-			if err := service.SysUser.UpdateGoogleAuth(user.Id, secret); err != nil {
+			if err := service.SysUser.UpdateGoogleAuthById(user.Id, secret); err != nil {
 				c.FailJsonExit(r, "绑定谷歌验证码密钥失败")
 			}
 			c.SusJsonExit(r, g.Map{
@@ -296,4 +296,23 @@ func (c *user) Login1(r *ghttp.Request) {
 
 	}
 
+}
+
+func (c *user) UnBind(r *ghttp.Request) {
+	var apiReq *model.UnbindGoogleAuthReq //
+	if err := r.Parse(&apiReq); err != nil {
+		c.FailJsonExit(r, err.(gvalid.Error).Current().Error())
+	}
+	if apiReq.UserName != "" {
+		// 将secret设置为 "" 等于取消绑定
+		err := service.SysUser.UpdateGoogleAuthByName(apiReq.UserName, "")
+		if err != nil {
+			g.Log().Error(err)
+			c.FailJsonExit(r, "取消绑定失败")
+		}
+	} else {
+		c.FailJsonExit(r, "取消绑定失败，参数错误")
+	}
+
+	c.SusJsonExit(r, "取消绑定谷歌验证成功")
 }
