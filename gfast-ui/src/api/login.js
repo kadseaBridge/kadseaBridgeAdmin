@@ -51,10 +51,10 @@ export function getCodeImg() {
   })
 }
 
-export function verifyGoogleCode(username, code) {
+export function verifyGoogleCode(username, googleCode) {
   return request({
-    url: '/system/auth/verifyGoogleCode',
+    url: '/system/login',
     method: 'post',
-    data: { username, code }
+    data: { username, googleCode }
   })
 }

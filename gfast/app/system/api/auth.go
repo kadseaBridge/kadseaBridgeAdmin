@@ -37,20 +37,20 @@ var (
 		EncryptKey:     g.Cfg().GetBytes("gToken.system.EncryptKey"),
 		AuthFailMsg:    g.Cfg().GetString("gToken.system.AuthFailMsg"),
 		MultiLogin:     MultiLogin,
-		//LoginPath:      "/login",
-		LoginPath:       "/system/auth/verifyGoogleCode",
-		LoginBeforeFunc: Auth.VerifyGoogleCode,
-		//LoginBeforeFunc:  Auth.login,
+		LoginPath:      "/login",
+		//LoginBeforeFunc: Auth.login,
+		//LoginPath:        "/system/auth/verifyGoogleCode",
+		LoginBeforeFunc:  Auth.VerifyGoogleCode,
 		LoginAfterFunc:   Auth.loginAfter,
 		LogoutPath:       "/logout",
-		AuthExcludePaths: g.SliceStr{"/system/auth/login", "/system/auth/verifyGoogleCode"},
+		AuthExcludePaths: g.SliceStr{"/login", "/system/auth/login", "/system/auth/verifyGoogleCode"},
 		AuthAfterFunc:    Auth.authAfterFunc,
 		LogoutBeforeFunc: Auth.loginOut,
 	}
 )
 
 // Login   后台用户登陆验证
-//func (c *auth) Login(r *ghttp.Request) (string, interface{}) {
+//func (c *auth) login(r *ghttp.Request) (string, interface{}) {
 //	var ctx = r.GetCtx()
 //	var apiReq *model.LoginParamsReq
 //	if err := r.Parse(&apiReq); err != nil {
@@ -153,7 +153,7 @@ func (c *auth) VerifyGoogleCode(r *ghttp.Request) (string, interface{}) {
 	}
 
 	// 假设这里有验证谷歌验证码的逻辑，并且验证通过
-	if commonService.NewGoogleAuth2().VerifyCode(userInfo.GoogleAuth, apiReq.GoogleCode) {
+	if commonService.NewGoogleAuth2().VerifyCode(apiReq.GoogleCode, userInfo.GoogleAuth) {
 		// 验证通过，设置用户信息
 		r.SetParam("userInfo", userInfo)
 		//更新用户登录记录 写入日志信息
@@ -165,10 +165,6 @@ func (c *auth) VerifyGoogleCode(r *ghttp.Request) (string, interface{}) {
 			keys = gconv.String(userInfo.Id) + "-" + gmd5.MustEncryptString(userInfo.UserName) + gmd5.MustEncryptString(userInfo.UserPassword)
 		}
 		return keys, userInfo
-		//c.SusJsonExit(r, g.Map{
-		//	"loginSuccess": true,
-		//	"userInfo":     userInfo,
-		//})
 	} else {
 		c.FailJsonExit(r, "谷歌验证码错误")
 	}

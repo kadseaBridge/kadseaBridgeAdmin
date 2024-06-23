@@ -244,7 +244,7 @@ func (c *user) DeleteUser(r *ghttp.Request) {
 }
 
 // Login   后台用户登陆验证
-func (c *user) Login(r *ghttp.Request) (string, interface{}) {
+func (c *user) Login(r *ghttp.Request) {
 	var ctx = r.GetCtx()
 	var apiReq *model.LoginParamsReq
 	if err := r.Parse(&apiReq); err != nil {
@@ -273,7 +273,6 @@ func (c *user) Login(r *ghttp.Request) (string, interface{}) {
 		})
 		c.FailJsonExit(r, err.Error())
 	} else if user != nil {
-
 		// 用户未绑定谷歌验证码
 		if user.GoogleAuth == "" {
 			secret, qrCode, err := commonService.NewGoogleAuth2().GenerateSecretAndQRCode(user.UserName)
@@ -290,80 +289,11 @@ func (c *user) Login(r *ghttp.Request) (string, interface{}) {
 				"qrcode":         qrCode,
 			})
 		} else {
-			// 验证谷歌验证码
-			//if !commonService.NewGoogleAuth2().Verify(user.GoogleAuth, apiReq.GoogleCode) {
-			//	c.FailJsonExit(r, "谷歌验证码错误")
-			//}
-			//r.SetParam("userInfo", user)
-			//service.SysUser.UpdateLoginInfo(user.Id, apiReq.Username, ip, userAgent, "登录成功", "系统后台")
-			//var keys string
-			//if MultiLogin {
-			//	keys = gconv.String(user.Id) + "-" + gmd5.MustEncryptString(user.UserName) + gmd5.MustEncryptString(user.UserPassword+ip)
-			//} else {
-			//	keys = gconv.String(user.Id) + "-" + gmd5.MustEncryptString(user.UserName) + gmd5.MustEncryptString(user.UserPassword)
-			//}
-			//return keys, user
-
-			//r.SetParam("userInfo", user)
-
 			c.SusJsonExit(r, g.Map{
 				"googleAuthRequired": true,
 			})
 		}
 
-		//r.SetParam("userInfo", user)
-		////更新用户登录记录 写入日志信息
-		//service.SysUser.UpdateLoginInfo(user.Id, apiReq.Username, ip, userAgent, "登录成功", "系统后台")
-		//var keys string
-		//if MultiLogin {
-		//	keys = gconv.String(user.Id) + "-" + gmd5.MustEncryptString(user.UserName) + gmd5.MustEncryptString(user.UserPassword+ip)
-		//} else {
-		//	keys = gconv.String(user.Id) + "-" + gmd5.MustEncryptString(user.UserName) + gmd5.MustEncryptString(user.UserPassword)
-		//}
-		//return keys, user
-
 	}
-	return "", nil
 
 }
-
-//func (c *user) VerifyGoogleAuth(r *ghttp.Request) (string, interface{}) {
-//	var ctx = r.GetCtx()
-//	var apiReq *model.GoogleAuthVerifyReq
-//	if err := r.Parse(&apiReq); err != nil {
-//		c.FailJsonExit(r, err.(gvalid.Error).Current().Error())
-//	}
-//
-//	ip := library.GetClientIp(r)
-//	userAgent := r.Header.Get("User-Agent")
-//	userInfo, err := service.SysUser.GetAdminByUserId(ctx, apiReq.UserId)
-//	if err != nil {
-//		c.FailJsonExit(r, err.(gvalid.Error).Current().Error())
-//	}
-//	if userInfo == nil {
-//		c.FailJsonExit(r, "用户信息缺失")
-//	}
-//
-//	// 假设这里有验证谷歌验证码的逻辑，并且验证通过
-//	if commonService.NewGoogleAuth2().VerifyCode(userInfo.GoogleAuth, apiReq.GoogleCode) {
-//		// 验证通过，设置用户信息
-//		r.SetParam("userInfo", userInfo)
-//		//更新用户登录记录 写入日志信息
-//		service.SysUser.UpdateLoginInfo(userInfo.Id, userInfo.UserName, ip, userAgent, "登录成功", "系统后台")
-//		var keys string
-//		if MultiLogin {
-//			keys = gconv.String(userInfo.Id) + "-" + gmd5.MustEncryptString(userInfo.UserName) + gmd5.MustEncryptString(userInfo.UserPassword+ip)
-//		} else {
-//			keys = gconv.String(userInfo.Id) + "-" + gmd5.MustEncryptString(userInfo.UserName) + gmd5.MustEncryptString(userInfo.UserPassword)
-//		}
-//		return keys, userInfo
-//		//c.SusJsonExit(r, g.Map{
-//		//	"loginSuccess": true,
-//		//	"userInfo":     userInfo,
-//		//})
-//	} else {
-//		c.FailJsonExit(r, "谷歌验证码错误")
-//	}
-//
-//	return "", nil
-//}

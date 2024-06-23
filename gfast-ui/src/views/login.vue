@@ -202,23 +202,19 @@ export default {
             Cookies.remove("password");
             Cookies.remove('rememberMe');
           }
-          // console.log(this.loginForm)
           this.$store
             .dispatch("Login", this.loginForm)
             .then(response => {
               try {
-                console.log("处理 Login action 返回的数据:", response)
                 if (response.bindGoogleAuth) {
                   this.googleAuthQRCode = response.qrcode;
                   this.googleAuthDialogVisible = true;
-                  console.log("显示谷歌二维码:", this.googleAuthQRCode)
                 } else if (response.googleAuthRequired) {
                   this.googleCodeDialogVisible = true;
                 } else {
                   this.$router.push({ path: this.redirect || "/" });
                 }
               } catch (e) {
-                console.error("then 块内处理数据时发生错误:", e)
                 this.loading = false;
               }
             })
@@ -233,7 +229,8 @@ export default {
 
     verifyGoogleCode() {
       this.$store
-        .dispatch('VerifyGoogleCode', { username: this.loginForm.username, code: this.googleCode })
+        .dispatch('VerifyGoogleCode', { username: this.loginForm.username, googleCode: this.googleCode })
+
         .then(() => {
           this.googleCodeDialogVisible = false;
           this.$router.push({ path: this.redirect || "/" });
@@ -242,6 +239,8 @@ export default {
           this.loading = false;
           this.getCode();
         });
+
+      this.googleCode = ""
     },
     confirmGoogleAuth() {
       // 验证谷歌二维码绑定
@@ -259,19 +258,6 @@ export default {
       this.getCode();
     }
 
-    // bindGoogleAuth() {
-    //   if (!this.googleCode) {
-    //     this.$message.error("请输入谷歌验证码");
-    //     return;
-    //   }
-    //   bindGoogleAuth({ code: this.googleCode }).then(() => {
-    //     this.$message.success("谷歌验证码绑定成功");
-    //     this.googleDialogVisible = false;
-    //     this.handleLogin(); // 重新登录
-    //   }).catch(() => {
-    //     this.$message.error("谷歌验证码绑定失败");
-    //   });
-    // }
   }
 };
 </script>

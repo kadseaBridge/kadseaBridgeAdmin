@@ -64,9 +64,9 @@ const user = {
       })
     },
 
-    VerifyGoogleCode({ commit }, { username, code }) {
+    VerifyGoogleCode({ commit }, { username, googleCode }) {
       return new Promise((resolve, reject) => {
-        verifyGoogleCode(username, code)
+        verifyGoogleCode(username, googleCode)
           .then(response => {
             const { data } = response
             commit('SET_TOKEN', data.token)

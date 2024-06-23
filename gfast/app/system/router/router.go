@@ -122,7 +122,6 @@ func init() {
 				group.PUT("resetUserPwd", api.User.ResetUserPwd)
 				group.PUT("changeUserStatus", api.User.ChangeUserStatus)
 				group.DELETE("deleteUser", api.User.DeleteUser)
-				//
 				group.POST("login", api.User.Login)
 			})
 			//系统监控
