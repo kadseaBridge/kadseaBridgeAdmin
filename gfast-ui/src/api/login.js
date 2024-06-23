@@ -19,7 +19,9 @@ export function login(username, password, code, uuid,google) {
     verifyKey:uuid
   }
   return request({
-    url: '/system/login',
+    // /system/auth/login1
+    // url: '/system/login',
+    url: '/system/auth/login',
     method: 'post',
     data: data
   })
@@ -51,7 +53,7 @@ export function getCodeImg() {
 
 export function verifyGoogleCode(username, code) {
   return request({
-    url: '/system/user/verifyGoogleCode',
+    url: '/system/auth/verifyGoogleCode',
     method: 'post',
     data: { username, code }
   })

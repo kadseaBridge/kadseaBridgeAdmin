@@ -16,15 +16,15 @@ type SysUser internal.SysUser
 
 // LoginParamsReq 登陆参数
 type LoginParamsReq struct {
-	Username   string `p:"username" v:"required#用户名不能为空"`
-	Password   string `p:"password" v:"required#密码不能为空"`
-	GoogleCode string `p:"googleCode"`
+	Username string `p:"username" v:"required#用户名不能为空"`
+	Password string `p:"password" v:"required#密码不能为空"`
+	//GoogleCode string `p:"googleCode"`
 	VerifyCode string `p:"verifyCode" v:"required#验证码不能为空"`
 	VerifyKey  string `p:"verifyKey"`
 }
 
 type GoogleAuthVerifyReq struct {
-	UserId     uint64 `p:"userId" v:"required#userId不能为空"`
+	UserName   string `p:"userName" v:"required#userName不能为空"`
 	GoogleCode string `p:"googleCode" v:"required#googleCode不能为空" `
 }
 
