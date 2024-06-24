@@ -30,9 +30,10 @@
     defaultFile = "index.html"
     delimiters  =  ["${", "}"]
 
-# Database.
+# Database.  db-bridge-main1.c1gyis42ifld.ap-east-1.rds.amazonaws.com
 [database]
-    link  = 'mysql:bridge:!WxY2P!Y^nVff#C@tcp(ec2-16-162-106-158.ap-east-1.compute.amazonaws.com:7006)/bridgedb'
+#    link  = 'mysql:bridge:!WxY2P!Y^nVff#C@tcp(ec2-16-162-106-158.ap-east-1.compute.amazonaws.com:7006)/bridgedb'
+    link  = 'mysql:bridge:2hzZcrIhy7PeACG74cL5@tcp(db-bridge-main1.c1gyis42ifld.ap-east-1.rds.amazonaws.com:3306)/bridgedb'
     #link  = "mysql:root:123456@tcp(18.162.115.16:7001)/med"
     charset   = "utf8mb4" #数据库编码
     debug = true
