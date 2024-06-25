@@ -123,7 +123,7 @@ func (s *bridgeOrder) GetList(req *dao.BridgeOrderSearchReq) (total, page int, o
 	if req.PageSize == 0 {
 		req.PageSize = comModel.PageSize
 	}
-	order := "id asc"
+	order := "id desc"
 	if req.OrderBy != "" {
 		order = req.OrderBy
 	}
