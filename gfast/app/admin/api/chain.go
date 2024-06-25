@@ -78,6 +78,11 @@ func (c *chain) Edit(r *ghttp.Request) {
 	if err := r.Parse(&req); err != nil {
 		c.FailJsonExit(r, err.(gvalid.Error).FirstString())
 	}
+
+	if !utils.VerifyAddress(req.BridgeContractAddress) {
+		c.FailJsonExit(r, "Bridge Contract Address error")
+	}
+
 	err := service.Chain.Edit(r.GetCtx(), req)
 	if err != nil {
 		c.FailJsonExit(r, err.Error())
