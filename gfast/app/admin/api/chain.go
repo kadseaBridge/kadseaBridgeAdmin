@@ -11,6 +11,7 @@ import (
 	"gfast/app/admin/dao"
 	"gfast/app/admin/service"
 	sysApi "gfast/app/system/api"
+	"gfast/utils"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/util/gvalid"
@@ -48,6 +49,10 @@ func (c *chain) Add(r *ghttp.Request) {
 	//获取参数
 	if err := r.Parse(&req); err != nil {
 		c.FailJsonExit(r, err.(gvalid.Error).FirstString())
+	}
+
+	if !utils.VerifyAddress(req.BridgeContractAddress) {
+		c.FailJsonExit(r, "Bridge Contract Address error")
 	}
 	err := service.Chain.Add(r.GetCtx(), req)
 	if err != nil {
