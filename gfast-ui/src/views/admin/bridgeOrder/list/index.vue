@@ -150,16 +150,12 @@
 
     </el-form>
     <el-row :gutter="10" class="mb8">
-
     </el-row>
+
+    <el-row :gutter="10" class="mb8"></el-row>
     <el-table v-loading="loading" :data="bridgeOrderList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="序号" align="center" prop="id" />
-<!--      <el-table-column label="序号" width="50">-->
-<!--        <template v-slot="scope">-->
-<!--          {{ scope.$index + 1 }}-->
-<!--        </template>-->
-<!--      </el-table-column>-->
       <el-table-column label="转出币种" align="center" prop="sourceCoinName" />
       <el-table-column label="转入币种" align="center" prop="targetCoinName" />
       <el-table-column label="转出链" align="center" prop="sourceChainName" />
@@ -169,11 +165,55 @@
       <el-table-column label="数量" align="center" prop="amount" />
       <el-table-column label="手续费" align="center" prop="fee" />
       <el-table-column label="gas费" align="center" prop="gasFee" />
-      <el-table-column label="转入钱包地址" align="center" prop="targetAddress" />
-      <el-table-column label="转出钱包地址" align="center" prop="sourceAddress" />
 
-      <el-table-column label="转出TXID" align="center" prop="outHash" />
-      <el-table-column label="转入TXID" align="center" prop="inHash" />
+      <!-- 转入钱包地址 -->
+      <el-table-column label="转入钱包地址" align="center">
+        <template slot-scope="scope">
+          <el-tooltip class="item" effect="dark" :content="scope.row.targetAddress" placement="top">
+            <span class="copyable" @click="copyToClipboard(scope.row.targetAddress)">
+              {{ formatAddress(scope.row.targetAddress) }}
+            </span>
+          </el-tooltip>
+        </template>
+      </el-table-column>
+
+      <!-- 转出钱包地址 -->
+      <el-table-column label="转出钱包地址" align="center">
+        <template slot-scope="scope">
+          <el-tooltip class="item" effect="dark" :content="scope.row.sourceAddress" placement="top">
+            <span class="copyable" @click="copyToClipboard(scope.row.sourceAddress)">
+              {{ formatAddress(scope.row.sourceAddress) }}
+            </span>
+          </el-tooltip>
+        </template>
+      </el-table-column>
+
+      <!-- 转出TXID -->
+      <el-table-column label="转出TXID" align="center">
+        <template slot-scope="scope">
+          <el-tooltip class="item" effect="dark" :content="scope.row.outHash" placement="top">
+            <span class="copyable" @click="copyToClipboard(scope.row.outHash)">
+              {{ formatTxId(scope.row.outHash) }}
+            </span>
+          </el-tooltip>
+        </template>
+      </el-table-column>
+
+      <!-- 转入TXID -->
+      <el-table-column label="转入TXID" align="center">
+        <template slot-scope="scope">
+          <el-tooltip class="item" effect="dark" :content="scope.row.inHash" placement="top">
+            <span class="copyable" @click="copyToClipboard(scope.row.inHash)">
+              {{ formatTxId(scope.row.inHash) }}
+            </span>
+          </el-tooltip>
+        </template>
+      </el-table-column>
+
+<!--      <el-table-column label="转入钱包地址" align="center" prop="targetAddress" />-->
+<!--      <el-table-column label="转出钱包地址" align="center" prop="sourceAddress" />-->
+<!--      <el-table-column label="转出TXID" align="center" prop="outHash" />-->
+<!--      <el-table-column label="转入TXID" align="center" prop="inHash" />-->
 <!--      <el-table-column label="跨链订单id" align="center" prop="orderId" />-->
 
       <el-table-column label="状态" align="center"  prop="status" :formatter="statusFormat" />
@@ -193,17 +233,6 @@
         </template>
       </el-table-column>
 
-<!--      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">-->
-<!--        <template slot-scope="scope">-->
-<!--          <el-button-->
-<!--            size="mini"-->
-<!--            type="text"-->
-<!--            icon="el-icon-edit"-->
-<!--            @click="handleUpdate(scope.row)"-->
-<!--            v-hasPermi="['admin/bridgeOrder/edit']"-->
-<!--          >人工审核</el-button>-->
-<!--        </template>-->
-<!--      </el-table-column>-->
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <div v-if="scope.row.status === 1">
@@ -261,6 +290,7 @@ import {
     changeBridgeOrderStatus,
     exportBridgeOrder,
 } from "@/api/admin/bridgeOrder";
+import ClipboardJS from 'clipboard';
 import {exportCoin} from "@/api/admin/coin";
 export default {
   components:{},
@@ -384,11 +414,6 @@ export default {
 
     },
 
-    // 人工审核状态字典翻译
-    // manualReviewStatusFormat(row, column) {
-    //   return this.selectDictLabel(this.manualReviewStatus, row.status);
-    // },
-    // 取消按钮 manualReviewStatus
     cancel() {
       this.open = false;
       this.reset();
@@ -517,7 +542,30 @@ export default {
       link.download = 'bridgeOrder.xlsx';
       link.click();
       window.URL.revokeObjectURL(link.href);
-    }
+    },
+
+    formatAddress(address) {
+      return address.slice(0, 6) + '...' + address.slice(-3);
+    },
+    formatTxId(txId) {
+      return txId.slice(0, 6) + '...' + txId.slice(-3);
+    },
+    copyToClipboard(text) {
+      const clipboard = new ClipboardJS('.copyable', {
+        text: () => text
+      });
+      clipboard.on('success', (e) => {
+        this.$message({
+          message: '复制成功',
+          type: 'success'
+        });
+        clipboard.destroy();
+      });
+      clipboard.on('error', (e) => {
+        this.$message.error('复制失败');
+        clipboard.destroy();
+      });
+    },
 
   }
 };
