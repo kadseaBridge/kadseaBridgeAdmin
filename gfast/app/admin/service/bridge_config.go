@@ -79,7 +79,7 @@ func (s *bridgeConfig) GetInfoById(ctx context.Context, id int64) (info *model.B
 func (s *bridgeConfig) Add(ctx context.Context, req *dao.BridgeConfigAddReq) (err error) {
 
 	if len(req.TargetCoinAddress) != 42 {
-		req.TargetCoinAddress, err = Coin.GetAddressByNameAndChainId(ctx, req.SourceCoinAddress, req.TargetChainId)
+		req.TargetCoinAddress, err = Coin.GetAddressByNameAndChainId(ctx, req.TargetCoinAddress, req.TargetChainId)
 		if err != nil {
 			err = gerror.New("目标链地址失败")
 			return
@@ -112,7 +112,33 @@ func (s *bridgeConfig) Add(ctx context.Context, req *dao.BridgeConfigAddReq) (er
 // Edit 修改
 func (s *bridgeConfig) Edit(ctx context.Context, req *dao.BridgeConfigEditReq) (err error) {
 
+	if len(req.TargetCoinAddress) != 42 {
+		req.TargetCoinAddress, err = Coin.GetAddressByNameAndChainId(ctx, req.TargetCoinAddress, req.TargetChainId)
+		if err != nil {
+			err = gerror.New("目标链地址失败")
+			return
+		}
+	}
+
+	if len(req.SourceCoinAddress) != 42 {
+		req.SourceCoinAddress, err = Coin.GetAddressByNameAndChainId(ctx, req.SourceCoinAddress, req.SourceChainId)
+		if err != nil {
+			err = gerror.New("获取当前链地址失败")
+			return
+		}
+	}
+
+	if len(req.TargetCoinAddress) != 42 || len(req.SourceCoinAddress) != 42 {
+		err = gerror.New("targetCoinAddress 或者 sourceCoinAddress 错误！ ")
+		return
+	}
 	_, err = dao.BridgeConfig.Ctx(ctx).FieldsEx(dao.BridgeConfig.Columns.Id).Where(dao.BridgeConfig.Columns.Id, req.Id).Update(req)
+	if err != nil {
+		if strings.Contains(err.Error(), "Duplicate entry") {
+			return fmt.Errorf("不能添加重复数据")
+		}
+		return err
+	}
 	return err
 }
 

@@ -60,7 +60,7 @@
           {{ sourceChainIdFormat(scope.row) }}
         </template>
       </el-table-column>
-      <el-table-column label="币种" align="center" prop="sourceCoinAddress" :formatter="sourceCoinAddressFormat" width="150">
+      <el-table-column label="当前链币种" align="center" prop="sourceCoinAddress" :formatter="sourceCoinAddressFormat" width="150">
         <template slot-scope="scope">
           {{ sourceCoinAddressFormat(scope.row) }}
         </template>
@@ -68,6 +68,11 @@
       <el-table-column label="对手链" align="center" prop="targetChainId" :formatter="targetChainIdFormat" width="150">
         <template slot-scope="scope">
           {{ targetChainIdFormat(scope.row) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="对手链币种" align="center" prop="targetCoinAddress" :formatter="targetCoinAddressFormat" width="150">
+        <template slot-scope="scope">
+          {{ targetCoinAddressFormat(scope.row) }}
         </template>
       </el-table-column>
 
@@ -103,7 +108,7 @@
     />
     <!-- 添加或修改跨链币对对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body :close-on-click-modal="false" @open="handleDialogOpen">
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
       <el-form-item label="当前链" prop="sourceChainId">
           <el-select v-model="form.sourceChainId" placeholder="请选择当前链"  @change="onSourceChainChangeDialog">
               <el-option
@@ -114,8 +119,9 @@
               ></el-option>
           </el-select>
       </el-form-item>
-      <el-form-item label="币种" prop="sourceCoinAddress">
-          <el-select v-model="form.sourceCoinAddress" placeholder="请选择币种" @change="onSourceCoinChangeDialog">
+      <el-form-item label="当前链币种" prop="sourceCoinAddress" width="150">
+<!--          <el-select v-model="form.sourceCoinAddress" placeholder="请选择币种" @change="onSourceCoinChangeDialog">-->
+        <el-select v-model="form.sourceCoinAddress" placeholder="请选择币种" >
 
             <el-option
               v-if="this.statusOptions && `${form.sourceCoinAddress}-${form.sourceChainId}` in coinAddressMap"
@@ -124,7 +130,7 @@
               :value="form.sourceCoinAddress"
             ></el-option>
             <el-option
-              v-for="item in filteredCoinOptionsDialog"
+              v-for="item in filteredSourceCoinOptionsDialog"
               :key="item.key"
               :label="item.value"
               :value="item.value"
@@ -132,8 +138,26 @@
 
           </el-select>
       </el-form-item>
-      <el-form-item label="对手链" prop="targetChainId" >
-          <el-select v-model="form.targetChainId" placeholder="请选择对手链" >
+<!--      <el-form-item label="对手链" prop="targetChainId" >-->
+<!--          <el-select v-model="form.targetChainId" placeholder="请选择对手链" >-->
+<!--            <el-option-->
+<!--              v-if="this.statusOptions && form.targetChainId in targetChainIdMap"-->
+<!--              :key="form.targetChainId"-->
+<!--              :label="targetChainIdMap[form.targetChainId]"-->
+<!--              :value="form.targetChainId"-->
+<!--            ></el-option>-->
+<!--            <el-option-->
+<!--              v-for="item in filteredTargetChainOptionsDialog"-->
+<!--              :key="item.key"-->
+<!--              :label="item.value"-->
+<!--              :value="item.key"-->
+<!--            ></el-option>-->
+
+<!--          </el-select>-->
+<!--      </el-form-item>-->
+
+        <el-form-item label="对手链" prop="targetChainId" >
+          <el-select v-model="form.targetChainId" placeholder="请选择对手链"  @change= "onTargetChainChangeDialog">
             <el-option
               v-if="this.statusOptions && form.targetChainId in targetChainIdMap"
               :key="form.targetChainId"
@@ -148,6 +172,25 @@
             ></el-option>
 
           </el-select>
+        </el-form-item>
+
+      <el-form-item label="对手链币种" prop="sourceCoinAddress">
+        <el-select v-model="form.targetCoinAddress" placeholder="请选择币种">
+
+          <el-option
+            v-if="this.statusOptions && `${form.targetCoinAddress}-${form.targetChainId}` in coinAddressMap"
+            :key="`${form.targetCoinAddress}-${form.targetChainId}`"
+            :label="coinAddressMap[`${form.targetCoinAddress}-${form.targetChainId}`]"
+            :value="form.targetCoinAddress"
+          ></el-option>
+          <el-option
+            v-for="item in filteredTargetCoinOptionsDialog"
+            :key="item.key"
+            :label="item.value"
+            :value="item.value"
+          ></el-option>
+
+        </el-select>
       </el-form-item>
 
       <el-form-item label="固定金额手续费：" label-width="150px" prop="feeFixed">
@@ -226,7 +269,8 @@ export default {
       isEnableOptions: [],
 
       filteredCoinOptions: [],
-      filteredCoinOptionsDialog: [],
+      filteredSourceCoinOptionsDialog: [],
+      filteredTargetCoinOptionsDialog:[],
       filteredTargetChainOptionsDialog: [],
       filteredTargetChainOptions:[],
 
@@ -346,6 +390,11 @@ export default {
     sourceCoinAddressFormat(row, column) {
       return this.selectItemsLabel2(this.sourceCoinAddressOptions, row.sourceCoinAddress, row.sourceChainId);
     },
+
+    // 币种关联表翻译
+    targetCoinAddressFormat(row, column) {
+      return this.selectItemsLabel2(this.sourceCoinAddressOptions, row.targetCoinAddress, row.targetChainId);
+    },
     // 状态字典翻译
     isEnableFormat(row, column) {
       return this.selectDictLabel(this.isEnableOptions, row.isEnable);
@@ -398,19 +447,27 @@ export default {
     },
     // 当前链选择变化（对话框）
     onSourceChainChangeDialog(value) {
-      this.filteredCoinOptionsDialog = this.sourceCoinAddressOptions.filter(item => item.chainId === value);
+      this.filteredSourceCoinOptionsDialog = this.sourceCoinAddressOptions.filter(item => item.chainId === value);
       this.form.sourceCoinAddress = undefined; // 重置币种选择框
-      this.filteredTargetChainOptionsDialog = []; // 重置对手链选择框
+      // this.filteredTargetChainOptionsDialog = []; // 重置对手链选择框
+      this.filteredTargetChainOptionsDialog = this.sourceChainIdOptions.filter(option => option.key !== this.form.sourceChainId);
       this.form.targetChainId = undefined; // 重置对手链选择框
+    },
+    // 对手链选择变化（对话框）
+    onTargetChainChangeDialog(value) {
+      this.filteredTargetCoinOptionsDialog = this.sourceCoinAddressOptions.filter(item => item.chainId === value);
+      // this.form.sourceCoinAddress = undefined; // 重置币种选择框
+      // this.filteredTargetChainOptionsDialog = []; // 重置对手链选择框
+      // this.form.targetChainId = undefined; // 重置对手链选择框
     },
 
     // 币种选择变化（对话框）
-    onSourceCoinChangeDialog(value) {
-      const filteredCoinRecords = this.sourceCoinAddressOptions.filter(item => item.value.includes(value));
-      const chainIds = filteredCoinRecords.map(item => item.chainId);
-      this.filteredTargetChainOptionsDialog = this.sourceChainIdOptions.filter(option => chainIds.includes(option.key) && option.key !== this.form.sourceChainId);
-      this.form.targetChainId = undefined; // 重置对手链选择框
-    },
+    // onSourceCoinChangeDialog(value) {
+    //   const filteredCoinRecords = this.sourceCoinAddressOptions.filter(item => item.value.includes(value));
+    //   const chainIds = filteredCoinRecords.map(item => item.chainId);
+    //   this.filteredTargetChainOptionsDialog = this.sourceChainIdOptions.filter(option => chainIds.includes(option.key) && option.key !== this.form.sourceChainId);
+    //   this.form.targetChainId = undefined; // 重置对手链选择框
+    // },
 
     selectItemsLabel2(datas, address, chainId) {
       for (let item of datas) {
