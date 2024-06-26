@@ -66,7 +66,7 @@
         >删除</el-button>
       </el-col>
 
-      <!-- <el-col :span="1.5">
+      <el-col :span="1.5">
         <el-button
           type="warning"
           icon="el-icon-download"
@@ -74,7 +74,7 @@
           @click="handleExport"
           v-hasPermi="['system:post:export']"
         >导出</el-button>
-      </el-col> -->
+      </el-col>
 
     </el-row>
 

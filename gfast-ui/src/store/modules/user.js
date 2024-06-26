@@ -1,4 +1,4 @@
-import { login, logout, getInfo } from '@/api/login'
+import {logout, getInfo, verifyGoogleCode, login1, unBind} from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import {getUpFileUrl} from "@/utils/ruoyi";
 
@@ -31,20 +31,57 @@ const user = {
 
   actions: {
     // 登录
-    Login({ commit }, userInfo) {
+    Login1({ commit }, userInfo) {
       const username = userInfo.username.trim()
       const password = userInfo.password
-      const google = userInfo.google
       const code = userInfo.code
       const uuid = userInfo.uuid
       return new Promise((resolve, reject) => {
-        login(username, password, code, uuid,google).then(res => {
-          setToken(res.data.token)
-          commit('SET_TOKEN', res.data.token)
-          resolve()
-        }).catch(error => {
-          reject(error)
-        })
+        login1(username, password, code, uuid)
+          .then(response => {
+            const { data } = response
+            try {
+              if (data.bindGoogleAuth || data.googleAuthRequired) {
+                resolve(data) // 返回数据以便前端处理谷歌验证
+              } else {
+                commit('SET_TOKEN', data.token)
+                setToken(data.token)
+                resolve(data)
+              }
+            } catch (error) {
+              reject(error)
+            }
+          })
+          .catch(error => {
+            reject(error)
+          })
+      })
+    },
+
+    VerifyGoogleCode({ commit }, { username, googleCode }) {
+      return new Promise((resolve, reject) => {
+        verifyGoogleCode(username, googleCode)
+          .then(response => {
+            const { data } = response
+            commit('SET_TOKEN', data.token)
+            setToken(data.token)
+            resolve(response)
+          })
+          .catch(error => {
+            reject(error)
+          })
+      })
+    },
+
+    UnBind({ commit }, { username }) {
+      return new Promise((resolve, reject) => {
+        unBind(username)
+          .then(response => {
+            resolve(response)
+          })
+          .catch(error => {
+            reject(error)
+          })
       })
     },
 
@@ -92,7 +129,8 @@ const user = {
         removeToken()
         resolve()
       })
-    }
+    },
+
   }
 }
 

@@ -7,16 +7,16 @@ import (
 	"gfast/app/system/model"
 	"gfast/app/system/service"
 	"gfast/library"
+	"github.com/gogf/gf/crypto/gmd5"
+	"github.com/gogf/gf/util/gconv"
 	"strings"
 
 	"github.com/goflyfox/gtoken/gtoken"
-	"github.com/gogf/gf/crypto/gmd5"
 	"github.com/gogf/gf/encoding/gjson"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/os/gcache"
 	"github.com/gogf/gf/os/gtime"
-	"github.com/gogf/gf/util/gconv"
 	"github.com/gogf/gf/util/gvalid"
 	"github.com/mssola/user_agent"
 )
@@ -37,68 +37,56 @@ var (
 		EncryptKey:       g.Cfg().GetBytes("gToken.system.EncryptKey"),
 		AuthFailMsg:      g.Cfg().GetString("gToken.system.AuthFailMsg"),
 		MultiLogin:       MultiLogin,
-		LoginPath:        "/login",
-		LoginBeforeFunc:  Auth.login,
+		LoginPath:        "/verifyGoogleCode",
+		LoginBeforeFunc:  Auth.VerifyGoogleCode,
 		LoginAfterFunc:   Auth.loginAfter,
 		LogoutPath:       "/logout",
-		AuthExcludePaths: g.SliceStr{"/login"},
+		AuthExcludePaths: g.SliceStr{"/verifyGoogleCode", "/system/auth/login1", "/system/auth/unBind"},
 		AuthAfterFunc:    Auth.authAfterFunc,
 		LogoutBeforeFunc: Auth.loginOut,
 	}
 )
 
-//后台用户登陆验证
-func (c *auth) login(r *ghttp.Request) (string, interface{}) {
+// VerifyGoogleCode 成功验证谷歌验证码后再执行
+// 此处假设你在其他地方完成了谷歌验证的逻辑，然后调用这个函数
+func (c *auth) VerifyGoogleCode(r *ghttp.Request) (string, interface{}) {
 	var ctx = r.GetCtx()
-	var apiReq *model.LoginParamsReq
+	var apiReq *model.GoogleAuthVerifyReq
 	if err := r.Parse(&apiReq); err != nil {
 		c.FailJsonExit(r, err.(gvalid.Error).Current().Error())
 	}
-	//判断验证码是否正确
-	// debug := genv.GetWithCmd("gf.debug")
-	// fmt.Println(apiReq.VerifyCode)
-	// if debug.Int() != 1 {
-	// 	if !commonService.Captcha.VerifyString(apiReq.VerifyKey, apiReq.VerifyCode) {
-	// 		c.FailJson(true, r, "验证码输入错误")
-	// 	}
-	// }
 
 	ip := library.GetClientIp(r)
 	userAgent := r.Header.Get("User-Agent")
-	if user, err := service.SysUser.GetAdminUserByUsernamePassword(ctx, apiReq); err != nil {
-		//保存日志（异步）
-		service.SysLoginLog.Invoke(&model.LoginLogParams{
-			Status:    0,
-			Username:  apiReq.Username,
-			Ip:        ip,
-			UserAgent: userAgent,
-			Msg:       err.Error(),
-			Module:    "系统后台",
-		})
-		c.FailJsonExit(r, err.Error())
-	} else if user != nil {
-		if user.Googleauth != "" {
-			if valid, _ := commonService.NewGoogleAuth().VerifyCode(user.Googleauth, apiReq.Googlecode); !valid {
-				c.FailJsonExit(r, "google验证码错误！")
-			}
-		}
+	userInfo, err := service.SysUser.GetUserByUsername(ctx, apiReq.UserName)
+	if err != nil {
+		c.FailJsonExit(r, err.(gvalid.Error).Current().Error())
+	}
+	if userInfo == nil {
+		c.FailJsonExit(r, "用户信息缺失")
+	}
 
-		r.SetParam("userInfo", user)
+	// 假设这里有验证谷歌验证码的逻辑，并且验证通过
+	if commonService.NewGoogleAuth().VerifyCode(apiReq.GoogleCode, userInfo.GoogleAuth) {
+		// 验证通过，设置用户信息
+		r.SetParam("userInfo", userInfo)
 		//更新用户登录记录 写入日志信息
-		service.SysUser.UpdateLoginInfo(user.Id, apiReq.Username, ip, userAgent, "登录成功", "系统后台")
+		service.SysUser.UpdateLoginInfo(userInfo.Id, userInfo.UserName, ip, userAgent, "登录成功", "系统后台")
 		var keys string
 		if MultiLogin {
-			keys = gconv.String(user.Id) + "-" + gmd5.MustEncryptString(user.UserName) + gmd5.MustEncryptString(user.UserPassword+ip)
+			keys = gconv.String(userInfo.Id) + "-" + gmd5.MustEncryptString(userInfo.UserName) + gmd5.MustEncryptString(userInfo.UserPassword+ip)
 		} else {
-			keys = gconv.String(user.Id) + "-" + gmd5.MustEncryptString(user.UserName) + gmd5.MustEncryptString(user.UserPassword)
+			keys = gconv.String(userInfo.Id) + "-" + gmd5.MustEncryptString(userInfo.UserName) + gmd5.MustEncryptString(userInfo.UserPassword)
 		}
-		return keys, user
+		return keys, userInfo
+	} else {
+		c.FailJsonExit(r, "谷歌验证码错误")
 	}
 
 	return "", nil
 }
 
-//登录成功返回
+// 登录成功返回
 func (c *auth) loginAfter(r *ghttp.Request, respData gtoken.Resp) {
 	if !respData.Success() {
 		r.Response.WriteJson(respData)
@@ -129,7 +117,7 @@ func (c *auth) loginAfter(r *ghttp.Request, respData gtoken.Resp) {
 	}
 }
 
-//gToken验证后返回
+// gToken验证后返回
 func (c *auth) authAfterFunc(r *ghttp.Request, respData gtoken.Resp) {
 	if r.Method == "OPTIONS" || respData.Success() {
 		r.Middleware.Next()
@@ -138,7 +126,7 @@ func (c *auth) authAfterFunc(r *ghttp.Request, respData gtoken.Resp) {
 	}
 }
 
-//后台退出登陆
+// 后台退出登陆
 func (c *auth) loginOut(r *ghttp.Request) bool {
 	//删除在线用户状态
 	authHeader := r.Header.Get("Authorization")

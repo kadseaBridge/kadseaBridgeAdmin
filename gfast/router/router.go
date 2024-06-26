@@ -1,6 +1,7 @@
 package router
 
 import (
+	_ "gfast/app/admin/router"
 	"gfast/app/common/api"
 	_ "gfast/app/system/router"
 	"gfast/middleware"

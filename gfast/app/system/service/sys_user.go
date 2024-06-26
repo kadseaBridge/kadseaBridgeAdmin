@@ -64,6 +64,11 @@ func (s *sysUser) GetAdminUserByUsernamePassword(ctx context.Context, req *model
 	return
 }
 
+// GetAdminByUserId
+func (s *sysUser) GetAdminByUserId(ctx context.Context, userId uint64) (user *model.LoginUserRes, err error) {
+	return dao.SysUser.FindByUserId(ctx, userId)
+}
+
 // GetUserByUsernamePassword 登陆验证
 func (s *sysUser) GetUserByUsernamePassword(ctx context.Context, req *model.LoginParamsReq) (user *model.LoginUserRes, err error) {
 	user, err = s.GetUserByUsername(ctx, req.Username)
@@ -632,6 +637,22 @@ func (s *sysUser) GetPostsByUserId(userId uint64) ([]*model.SysPost, error) {
 	var posts []*model.SysPost
 	err = dao.SysPost.Where(dao.SysPost.C.PostId+" in (?)", postIds).Scan(&posts)
 	return posts, err
+}
+
+func (s *sysUser) UpdateGoogleAuthById(userId uint64, secret string) error {
+	_, err := dao.SysUser.WherePri(userId).Update(g.Map{
+		dao.SysUser.Columns.GoogleAuth: secret,
+	})
+	return err
+}
+
+func (s *sysUser) UpdateGoogleAuthByName(name string, secret string) error {
+	_, err := dao.SysUser.
+		Where(dao.SysUser.Columns.UserName, name).
+		Update(g.Map{
+			dao.SysUser.Columns.GoogleAuth: secret,
+		})
+	return err
 }
 
 // EditUser 修改用户

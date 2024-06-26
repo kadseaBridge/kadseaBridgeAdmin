@@ -30,9 +30,10 @@
     defaultFile = "index.html"
     delimiters  =  ["${", "}"]
 
-# Database.
+# Database.  db-bridge-main1.c1gyis42ifld.ap-east-1.rds.amazonaws.com
 [database]
-    link  = 'mysql:bridge:!WxY2P!Y^nVff#C@tcp(ec2-16-162-106-158.ap-east-1.compute.amazonaws.com:7006)/bridgedb'
+#    link  = 'mysql:bridge:!WxY2P!Y^nVff#C@tcp(ec2-16-162-106-158.ap-east-1.compute.amazonaws.com:7006)/bridgedb'
+    link  = 'mysql:bridge:2hzZcrIhy7PeACG74cL5@tcp(db-bridge-main1.c7ugawccgme1.ap-southeast-1.rds.amazonaws.com:3306)/bridgedb'
     #link  = "mysql:root:123456@tcp(18.162.115.16:7001)/med"
     charset   = "utf8mb4" #数据库编码
     debug = true
@@ -48,8 +49,8 @@
 
 # Redis数据库配置
 [redis]
-    open = true #是否开启 redis 缓存 若不开启使用gchache缓存方式
-    default = "ec2-16-162-106-158.ap-east-1.compute.amazonaws.com:7079,1,k3gPEFaKCEx8lmlI?idleTimeout=20&maxActive=100"
+    open = false #是否开启 redis 缓存 若不开启使用gchache缓存方式
+    default = "ec2-18-141-131-121.ap-southeast-1.compute.amazonaws.com:7079,1,5fc2QSMS6JzcD6vD?idleTimeout=20&maxActive=100"
 
 
 #jwt配置
@@ -64,7 +65,7 @@
         AuthFailMsg = "登录超时，请重新登录"
         MultiLogin = true  #后台是否允许多端同时在线
 [system]
-    notCheckAuthAdminIds = [1,2,31]  #无需验证后台权限的用户id
+    notCheckAuthAdminIds = [1,44,45,46,47,48]  #无需验证后台权限的用户id
 
 #casbin配置
 [casbin]
@@ -80,7 +81,7 @@
     autoRemovePre = true   #是否自动删除表前缀
     tablePrefix   = "table_,qxkj_"   #表前缀
     templatePath  = "./template/vm"  #代码生成模板路径
-    frontDir = "E:/gowork/Walkie-Talkie/cms/gfast-ui" #前端路径
+    frontDir = "D:/jobproject/kadsea/cms/gfast-ui" #前端路径
 
 # 上传配置
 [upload]

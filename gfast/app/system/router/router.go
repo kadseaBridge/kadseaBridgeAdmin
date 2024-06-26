@@ -52,6 +52,7 @@ func init() {
 				group.PUT("/edit", api.UserProfile.Edit)
 				//修改密码
 				group.PUT("/updatePwd", api.UserProfile.UpdatePwd)
+				//group.POST("/verifyGoogleCode", api.User.VerifyGoogleAuth)
 			})
 			//配置相关
 			group.Group("/config", func(group *ghttp.RouterGroup) {
@@ -121,6 +122,8 @@ func init() {
 				group.PUT("resetUserPwd", api.User.ResetUserPwd)
 				group.PUT("changeUserStatus", api.User.ChangeUserStatus)
 				group.DELETE("deleteUser", api.User.DeleteUser)
+				group.POST("login1", api.User.Login1)
+				group.POST("unBind", api.User.UnBind)
 			})
 			//系统监控
 			group.Group("/monitor", func(group *ghttp.RouterGroup) {

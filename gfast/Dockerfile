@@ -1,26 +1,24 @@
-FROM loads/alpine:3.8
-
-LABEL maintainer="john@goframe.org"
-
-###############################################################################
-#                                INSTALLATION
-###############################################################################
+# 使用官方 Go 语言镜像作为构建阶段的基础镜像
+FROM golang:1.21 AS build
 
 # 设置固定的项目路径
-ENV WORKDIR /var/www/gfast
+WORKDIR /src
 
-# 添加应用可执行文件，并设置执行权限
-ADD ./bin/linux_amd64/main   $WORKDIR/main
-RUN chmod +x $WORKDIR/main
+# 将 go.mod 和 go.sum 复制到工作目录中
+COPY go.mod go.sum ./
 
-# 添加I18N多语言文件、静态文件、配置文件、模板文件
-ADD i18n     $WORKDIR/i18n
-ADD public   $WORKDIR/public
-ADD config   $WORKDIR/config
-ADD template $WORKDIR/template
+# 设置代理（如果需要的话，可以切换到 goproxy.cn）
+ENV GOPROXY=https://goproxy.cn,direct
 
-###############################################################################
-#                                   START
-###############################################################################
-WORKDIR $WORKDIR
-CMD ./main
+# 下载依赖
+RUN go mod download
+
+# 将项目文件复制到工作目录中
+COPY . .
+
+# 构建应用程序
+RUN go build -o /src/adminbackend ./main.go
+
+CMD ["./adminbackend"]
+
+

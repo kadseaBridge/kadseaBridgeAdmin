@@ -9,17 +9,16 @@ import request from '@/utils/request'
 
 
 // 登录方法
-export function login(username, password, code, uuid,google) {
-  console.log(username, password,google, code, uuid)
+export function login1(username, password, code, uuid) {
+  console.log(username, password, code, uuid)
   const data = {
     username,
     password,
-    googlecode:google,
     verifyCode:code,
     verifyKey:uuid
   }
   return request({
-    url: '/system/login',
+    url: '/system/auth/login1',
     method: 'post',
     data: data
   })
@@ -46,5 +45,22 @@ export function getCodeImg() {
   return request({
     url: '/captcha/get',
     method: 'get'
+  })
+}
+
+export function verifyGoogleCode(username, googleCode) {
+  return request({
+    url: '/system/verifyGoogleCode',
+    method: 'post',
+    data: { username, googleCode }
+  })
+}
+
+// 取消绑定谷歌验证
+export function unBind(userName) {
+  return request({
+    url: '/system/auth/unBind',
+    method: 'post',
+    data: { userName }
   })
 }

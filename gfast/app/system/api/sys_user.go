@@ -1,10 +1,14 @@
 package api
 
 import (
+	"fmt"
+	commonService "gfast/app/common/service"
 	"gfast/app/system/model"
 	"gfast/app/system/service"
+	"gfast/library"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
+	"github.com/gogf/gf/os/genv"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/gogf/gf/util/gvalid"
 )
@@ -237,4 +241,78 @@ func (c *user) DeleteUser(r *ghttp.Request) {
 	}
 
 	c.SusJsonExit(r, "删除成功")
+}
+
+// Login   后台用户登陆验证
+func (c *user) Login1(r *ghttp.Request) {
+	var ctx = r.GetCtx()
+	var apiReq *model.LoginParamsReq
+	if err := r.Parse(&apiReq); err != nil {
+		c.FailJsonExit(r, err.(gvalid.Error).Current().Error())
+	}
+	//判断验证码是否正确
+	debug := genv.GetWithCmd("gf.debug")
+	fmt.Println(apiReq.VerifyCode)
+	if debug.Int() != 1 {
+		if !commonService.Captcha.VerifyString(apiReq.VerifyKey, apiReq.VerifyCode) {
+			c.FailJson(true, r, "验证码输入错误")
+		}
+	}
+
+	ip := library.GetClientIp(r)
+	userAgent := r.Header.Get("User-Agent")
+	if user, err := service.SysUser.GetAdminUserByUsernamePassword(ctx, apiReq); err != nil {
+		//保存日志（异步）
+		service.SysLoginLog.Invoke(&model.LoginLogParams{
+			Status:    0,
+			Username:  apiReq.Username,
+			Ip:        ip,
+			UserAgent: userAgent,
+			Msg:       err.Error(),
+			Module:    "系统后台",
+		})
+		c.FailJsonExit(r, err.Error())
+	} else if user != nil {
+		// 用户未绑定谷歌验证码
+		if user.GoogleAuth == "" {
+			secret, qrCode, err := commonService.NewGoogleAuth().GenerateSecretAndQRCode(user.UserName)
+			if err != nil {
+				c.FailJsonExit(r, "生成谷歌验证码失败")
+			}
+			// 绑定谷歌验证码
+			user.GoogleAuth = secret
+			if err := service.SysUser.UpdateGoogleAuthById(user.Id, secret); err != nil {
+				c.FailJsonExit(r, "绑定谷歌验证码密钥失败")
+			}
+			c.SusJsonExit(r, g.Map{
+				"bindGoogleAuth": true,
+				"qrcode":         qrCode,
+			})
+		} else {
+			c.SusJsonExit(r, g.Map{
+				"googleAuthRequired": true,
+			})
+		}
+
+	}
+
+}
+
+func (c *user) UnBind(r *ghttp.Request) {
+	var apiReq *model.UnbindGoogleAuthReq //
+	if err := r.Parse(&apiReq); err != nil {
+		c.FailJsonExit(r, err.(gvalid.Error).Current().Error())
+	}
+	if apiReq.UserName != "" {
+		// 将secret设置为 "" 等于取消绑定
+		err := service.SysUser.UpdateGoogleAuthByName(apiReq.UserName, "")
+		if err != nil {
+			g.Log().Error(err)
+			c.FailJsonExit(r, "取消绑定失败")
+		}
+	} else {
+		c.FailJsonExit(r, "取消绑定失败，参数错误")
+	}
+
+	c.SusJsonExit(r, "取消绑定谷歌验证成功")
 }

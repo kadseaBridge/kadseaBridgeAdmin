@@ -36,6 +36,15 @@ export function addUser(data) {
   })
 }
 
+// 绑定谷歌验证
+export function bindGoogleAuth(data) {
+  return request({
+    url: '/system/auth/bindGoogleAuth',
+    method: 'put',
+    data: data
+  })
+}
+
 // 修改用户
 export function updateUser(data) {
   return request({
