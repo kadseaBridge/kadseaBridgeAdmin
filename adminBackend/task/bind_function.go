@@ -8,6 +8,7 @@
 package task
 
 import (
+	adminApi "gfast/app/admin/api"
 	"gfast/app/system/api"
 	"gfast/app/system/service"
 
@@ -30,6 +31,14 @@ func init() {
 		Run:      api.Auth.CheckUserOnline,
 	}
 	service.TimeTaskList.AddTask(checkUserOnlineTask)
+
+	// DailyBridgeStats
+
+	helloTask := &service.TimeTask{
+		FuncName: "startDailyStats",
+		Run:      adminApi.DailyBridgeStats.StartDailyStats,
+	}
+	service.TimeTaskList.AddTask(helloTask)
 
 	//自动执行已开启的任务
 	jobs, err := service.SysJob.GetJobs()

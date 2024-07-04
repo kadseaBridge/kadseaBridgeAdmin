@@ -130,6 +130,10 @@ func (s *bridgeOrder) GetList(req *dao.BridgeOrderSearchReq) (total, page int, o
 
 	var list []*model.BridgeOrder
 	err = m.Page(page, req.PageSize).Order(order).Scan(&list)
+	if err != nil {
+		g.Log().Error(err)
+		err = gerror.New("获取数据失败")
+	}
 
 	rsp := make([]*model.BridgeOrderRsp, len(list))
 
@@ -182,10 +186,6 @@ func (s *bridgeOrder) GetList(req *dao.BridgeOrderSearchReq) (total, page int, o
 
 	orderlist = rsp
 
-	if err != nil {
-		g.Log().Error(err)
-		err = gerror.New("获取数据失败")
-	}
 	return
 }
 

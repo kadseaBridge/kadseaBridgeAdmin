@@ -1,7 +1,7 @@
 // ==========================================================================
 // GFast自动生成控制器相关代码，只生成一次，按需修改,再次生成不会覆盖.
-// 生成日期：2024-06-14 17:06:57
-// 生成路径: adminBackend/app/admin/api/daily_bridge_stats.go
+// 生成日期：2024-07-04 17:54:12
+// 生成路径: gfast/app/admin/api/daily_bridge_stats.go
 // 生成人：jimmy
 // ==========================================================================
 
@@ -14,6 +14,7 @@ import (
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/util/gvalid"
+	"time"
 )
 
 type dailyBridgeStats struct {
@@ -88,4 +89,34 @@ func (c *dailyBridgeStats) Delete(r *ghttp.Request) {
 		c.FailJsonExit(r, err.Error())
 	}
 	c.SusJsonExit(r, "删除成功")
+}
+
+// 获取某一天的跨链统计
+func (c *dailyBridgeStats) DailyStats() {
+	param := &dao.DailyBridgeStatsSearchReq{}
+	date := time.Now()
+	service.DailyBridgeStats.DailyStats(param, date)
+
+}
+
+func (c *dailyBridgeStats) StartDailyStats() {
+	param := &dao.DailyBridgeStatsSearchReq{}
+	layout := "2006-01-02"
+	inputDate := "2024-05-31"
+	startDate, err := time.Parse(layout, inputDate)
+	if err != nil {
+		g.Log().Error("日期格式错误:", err)
+		return
+	}
+
+	// 获取当前日期
+	endDate := time.Now().Truncate(24 * time.Hour)
+
+	//service.DailyBridgeStats.DailyStats(param, date)
+
+	for date := startDate; !date.After(endDate); date = date.Add(24 * time.Hour) {
+		service.DailyBridgeStats.DailyStats(param, date)
+
+	}
+
 }

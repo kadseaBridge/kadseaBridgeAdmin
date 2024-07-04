@@ -1,7 +1,7 @@
 // ==========================================================================
 // GFast自动生成dao internal操作代码，无需手动修改，重新生成会自动覆盖.
-// 生成日期：2024-06-14 17:06:57
-// 生成路径: adminBackend/app/admin/dao/internal/daily_bridge_stats.go
+// 生成日期：2024-07-04 17:54:12
+// 生成路径: gfast/app/admin/dao/internal/daily_bridge_stats.go
 // 生成人：jimmy
 // ==========================================================================
 
@@ -22,15 +22,16 @@ type DailyBridgeStatsDao struct {
 
 // DailyBridgeStatsColumns defines and stores column names for table daily_bridge_stats.
 type DailyBridgeStatsColumns struct {
-	Id                 string // 序号
-	Date               string // 时间
-	Coin               string // 币种
-	ChainType          string // 链类型
-	TransferIn         string // 100
-	TransferOut        string // 100
+	Id                 string // id
+	Date               string // 日期
+	CoinName           string // 币种
+	ChainName          string // 链类型
+	TransferIn         string // 跨链转入
+	TransferOut        string // 跨链转出
 	TransferDifference string // 跨链差额
-	TransferFee        string // 跨链手续费
+	Fee                string // 跨链手续费
 	PlatformAssets     string // 平台资产
+	FinancialBalance   string // 财务余额
 	CreatedAt          string //
 	UpdatedAt          string //
 }
@@ -38,13 +39,14 @@ type DailyBridgeStatsColumns struct {
 var dailyBridgeStatsColumns = DailyBridgeStatsColumns{
 	Id:                 "id",
 	Date:               "date",
-	Coin:               "coin",
-	ChainType:          "chain_type",
+	CoinName:           "coin_name",
+	ChainName:          "chain_name",
 	TransferIn:         "transfer_in",
 	TransferOut:        "transfer_out",
 	TransferDifference: "transfer_difference",
-	TransferFee:        "transfer_fee",
+	Fee:                "fee",
 	PlatformAssets:     "platform_assets",
+	FinancialBalance:   "financial_balance",
 	CreatedAt:          "created_at",
 	UpdatedAt:          "updated_at",
 }

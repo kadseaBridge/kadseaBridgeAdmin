@@ -1,7 +1,7 @@
 // ==========================================================================
 // GFast自动生成dao操作代码，无需手动修改，重新生成不会自动覆盖.
-// 生成日期：2024-06-14 17:06:57
-// 生成路径: adminBackend/app/admin/dao/daily_bridge_stats.go
+// 生成日期：2024-07-04 17:54:12
+// 生成路径: gfast/app/admin/dao/daily_bridge_stats.go
 // 生成人：jimmy
 // ==========================================================================
 
@@ -30,10 +30,9 @@ var (
 
 // DailyBridgeStatsSearchReq 分页请求参数
 type DailyBridgeStatsSearchReq struct {
-	StartDate *gtime.Time `p:"startDate"` //时间
-	EndDate   *gtime.Time `p:"endDate"`   //时间
-	Coin      string      `p:"coin"`      //币种
-	ChainType string      `p:"chainType"` //链类型
+	Date      *gtime.Time `p:"date"`      //日期
+	CoinName  string      `p:"coinName"`  //币种
+	ChainName string      `p:"chainName"` //链类型
 	comModel.PageReq
 }
 

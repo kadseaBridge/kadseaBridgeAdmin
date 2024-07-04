@@ -78,7 +78,7 @@ func (s *bridgeConfig) GetInfoById(ctx context.Context, id int64) (info *model.B
 // Add 添加
 func (s *bridgeConfig) Add(ctx context.Context, req *dao.BridgeConfigAddReq) (err error) {
 
-	if len(req.TargetCoinAddress) != 42 {
+	if len(req.TargetCoinAddress) < 32 {
 		req.TargetCoinAddress, err = Coin.GetAddressByNameAndChainId(ctx, req.TargetCoinAddress, req.TargetChainId)
 		if err != nil {
 			err = gerror.New("目标链地址失败")
@@ -86,7 +86,7 @@ func (s *bridgeConfig) Add(ctx context.Context, req *dao.BridgeConfigAddReq) (er
 		}
 	}
 
-	if len(req.SourceCoinAddress) != 42 {
+	if len(req.SourceCoinAddress) < 32 {
 		req.SourceCoinAddress, err = Coin.GetAddressByNameAndChainId(ctx, req.SourceCoinAddress, req.SourceChainId)
 		if err != nil {
 			err = gerror.New("获取当前链地址失败")
@@ -94,7 +94,7 @@ func (s *bridgeConfig) Add(ctx context.Context, req *dao.BridgeConfigAddReq) (er
 		}
 	}
 
-	if len(req.TargetCoinAddress) != 42 || len(req.SourceCoinAddress) != 42 {
+	if len(req.TargetCoinAddress) < 32 || len(req.SourceCoinAddress) < 32 {
 		err = gerror.New("targetCoinAddress 或者 sourceCoinAddress 错误！ ")
 		return
 	}
@@ -112,7 +112,7 @@ func (s *bridgeConfig) Add(ctx context.Context, req *dao.BridgeConfigAddReq) (er
 // Edit 修改
 func (s *bridgeConfig) Edit(ctx context.Context, req *dao.BridgeConfigEditReq) (err error) {
 
-	if len(req.TargetCoinAddress) != 42 {
+	if len(req.TargetCoinAddress) < 32 {
 		req.TargetCoinAddress, err = Coin.GetAddressByNameAndChainId(ctx, req.TargetCoinAddress, req.TargetChainId)
 		if err != nil {
 			err = gerror.New("目标链地址失败")
@@ -120,7 +120,7 @@ func (s *bridgeConfig) Edit(ctx context.Context, req *dao.BridgeConfigEditReq) (
 		}
 	}
 
-	if len(req.SourceCoinAddress) != 42 {
+	if len(req.SourceCoinAddress) < 32 {
 		req.SourceCoinAddress, err = Coin.GetAddressByNameAndChainId(ctx, req.SourceCoinAddress, req.SourceChainId)
 		if err != nil {
 			err = gerror.New("获取当前链地址失败")
@@ -128,7 +128,7 @@ func (s *bridgeConfig) Edit(ctx context.Context, req *dao.BridgeConfigEditReq) (
 		}
 	}
 
-	if len(req.TargetCoinAddress) != 42 || len(req.SourceCoinAddress) != 42 {
+	if len(req.TargetCoinAddress) < 32 || len(req.SourceCoinAddress) < 32 {
 		err = gerror.New("targetCoinAddress 或者 sourceCoinAddress 错误！ ")
 		return
 	}

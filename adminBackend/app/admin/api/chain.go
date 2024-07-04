@@ -15,6 +15,7 @@ import (
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/util/gvalid"
+	"strings"
 )
 
 type chain struct {
@@ -51,9 +52,16 @@ func (c *chain) Add(r *ghttp.Request) {
 		c.FailJsonExit(r, err.(gvalid.Error).FirstString())
 	}
 
-	if !utils.VerifyAddress(req.BridgeContractAddress) {
-		c.FailJsonExit(r, "Bridge Contract Address error")
+	if strings.Contains(req.ChainId, "tron") {
+		if len(req.BridgeContractAddress) != 34 {
+			c.FailJsonExit(r, "Tron Bridge Contract Address error")
+		}
+	} else {
+		if !utils.VerifyAddress(req.BridgeContractAddress) {
+			c.FailJsonExit(r, "Bridge Contract Address error")
+		}
 	}
+
 	err := service.Chain.Add(r.GetCtx(), req)
 	if err != nil {
 		c.FailJsonExit(r, err.Error())
@@ -79,8 +87,14 @@ func (c *chain) Edit(r *ghttp.Request) {
 		c.FailJsonExit(r, err.(gvalid.Error).FirstString())
 	}
 
-	if !utils.VerifyAddress(req.BridgeContractAddress) {
-		c.FailJsonExit(r, "Bridge Contract Address error")
+	if strings.Contains(req.ChainId, "tron") {
+		if len(req.BridgeContractAddress) != 34 {
+			c.FailJsonExit(r, "Tron Bridge Contract Address error")
+		}
+	} else {
+		if !utils.VerifyAddress(req.BridgeContractAddress) {
+			c.FailJsonExit(r, "Bridge Contract Address error")
+		}
 	}
 
 	err := service.Chain.Edit(r.GetCtx(), req)
