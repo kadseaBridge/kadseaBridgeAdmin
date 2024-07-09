@@ -162,9 +162,21 @@
 
       <el-table-column label="转入链" align="center" prop="targetChainName" />
 
-      <el-table-column label="数量" align="center" prop="amount" />
-      <el-table-column label="手续费" align="center" prop="fee" />
+      <el-table-column label="数量" align="center" prop="amount">
+      <template slot-scope="scope">
+        <span>{{ formatNumber(scope.row.amount) }}</span>
+      </template>
+      </el-table-column>
+      <el-table-column label="手续费" align="center" prop="fee" >
+        <template slot-scope="scope">
+          <span>{{ formatNumber(scope.row.fee) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="gas费" align="center" prop="gasFee" />
+<!--        <template slot-scope="scope">-->
+<!--          <span>{{ formatNumber(scope.row.gasFee) }}</span>-->
+<!--        </template>-->
+<!--      </el-table-column>-->
 
       <!-- 转入钱包地址 -->
       <el-table-column label="转入钱包地址" align="center">
@@ -292,6 +304,7 @@ import {
 } from "@/api/admin/bridgeOrder";
 import ClipboardJS from 'clipboard';
 import {exportCoin} from "@/api/admin/coin";
+import { BigNumber } from 'bignumber.js';
 export default {
   components:{},
   name: "BridgeOrder",
@@ -374,6 +387,14 @@ export default {
         this.sourceChainIdOptions = this.setItems(res, 'chainId', 'name')
         this.targetChainIdOptions = this.sourceChainIdOptions
       })
+    },
+
+    formatNumber(number) {
+      if (typeof number === 'number') {
+        let bigNumber = new BigNumber(number);
+        return bigNumber.toFixed().replace(/(\.\d*?[1-9])0+$/g, '$1').replace(/\.0+$/, '');
+      }
+      return number;
     },
 
     /** 查询跨链记录列表 */

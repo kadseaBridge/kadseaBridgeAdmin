@@ -86,6 +86,8 @@
       <el-table-column label="手续费百分比，如果不需要则设置为0" align="center" prop="feePercent" /> -->
       <el-table-column label="跨入每日审核数量" align="center" prop="dayTotal" />
       <el-table-column label="跨入单次审核数量" align="center" prop="onceTotal" />
+      <el-table-column label="波场收款方未激活惩罚费用" align="center" prop="tronNotActiveFee" />
+      <el-table-column label="波场没有TRC20时固定惩罚费用" align="center" prop="tronTrc20HaveNoFee" />
       <el-table-column label="状态" align="center" prop="isEnable" :formatter="isEnableFormat" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
@@ -205,6 +207,16 @@
       <el-form-item label="跨入单次审核数量" label-width="150px" prop="onceTotal">
            <el-input v-model="form.onceTotal" placeholder="请输入跨入单次审核数量" />
       </el-form-item>
+
+<!--        <el-table-column label="波场收款方未激活惩罚费用" align="center" prop="tronNotActiveFee" />-->
+<!--        <el-table-column label="波场没有TRC20时固定惩罚费用" align="center" prop="tronTrc20HaveNoFee" />-->
+        <el-form-item label="波场收款方未激活惩罚费用" label-width="190px" prop="tronNotActiveFee">
+          <el-input v-model="form.tronNotActiveFee" placeholder="波场收款方未激活时收取的固定惩罚费用" />
+        </el-form-item>
+        <el-form-item label="波场没有TRC20时固定惩罚费用" label-width="220px" prop="tronTrc20HaveNoFee">
+          <el-input v-model="form.tronTrc20HaveNoFee" placeholder="波场如果没有TRC20时收取的固定惩罚费用" />
+        </el-form-item>
+
        <el-form-item label="状态" prop="isEnable">
            <el-radio-group v-model="form.isEnable">
                <el-radio
@@ -415,6 +427,8 @@ export default {
         feePercent: undefined,
         dayTotal: undefined,
         onceTotal: undefined,
+        tronNotActiveFee: undefined,
+        tronTrc20HaveNoFee: undefined,
         isEnable: "0" ,
         // targetCoinAddress: undefined,
         updateAt: undefined,

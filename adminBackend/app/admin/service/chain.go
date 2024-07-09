@@ -96,6 +96,33 @@ func (s *chain) DeleteByIds(ctx context.Context, ids []int) (err error) {
 }
 
 // GetInfoById 通过id获取
+func (s *chain) GetIdByChainName(ctx context.Context, name string) (chaiId string, err error) {
+	if name == "" {
+		err = gerror.New("参数错误")
+		return
+	}
+
+	// 创建一个临时结构体来接收只包含 Name 字段的数据
+	var result struct {
+		ChainId string
+	}
+
+	// 只选择 Name 字段
+	err = dao.Chain.Ctx(ctx).Where(dao.Chain.Columns.Name, name).Fields("chainId").Scan(&result)
+	if err != nil {
+		g.Log().Error(err)
+		return
+	}
+	if result.ChainId == "" {
+		err = gerror.New("获取信息失败")
+		return
+	}
+
+	chaiId = result.ChainId
+	return
+}
+
+// GetInfoById 通过id获取
 func (s *chain) GetNameByChainId(ctx context.Context, chainId string) (name string, err error) {
 	if chainId == "" {
 		err = gerror.New("参数错误")
@@ -119,5 +146,32 @@ func (s *chain) GetNameByChainId(ctx context.Context, chainId string) (name stri
 	}
 
 	name = result.Name
+	return
+}
+
+// GetInfoById 通过id获取
+func (s *chain) GetRpcByChainId(ctx context.Context, chainId string) (rpc string, err error) {
+	if chainId == "" {
+		err = gerror.New("参数错误")
+		return
+	}
+
+	// 创建一个临时结构体来接收只包含 Name 字段的数据
+	var result struct {
+		Rpc string
+	}
+
+	// 只选择 Name 字段
+	err = dao.Chain.Ctx(ctx).Where(dao.Chain.Columns.ChainId, chainId).Fields("rpc").Scan(&result)
+	if err != nil {
+		g.Log().Error(err)
+		return
+	}
+	if result.Rpc == "" {
+		err = gerror.New("获取信息失败")
+		return
+	}
+
+	rpc = result.Rpc
 	return
 }

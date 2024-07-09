@@ -43,3 +43,19 @@ export function delDailyBridgeStats(ids) {
     }
   })
 }
+// 关联coin表选项
+export function listCoin(query){
+   return request({
+     url: '/admin/coin/list',
+     method: 'get',
+     params: query
+   })
+}
+// 关联chain表选项
+export function listChain(query){
+   return request({
+     url: '/admin/chain/list',
+     method: 'get',
+     params: query
+   })
+}

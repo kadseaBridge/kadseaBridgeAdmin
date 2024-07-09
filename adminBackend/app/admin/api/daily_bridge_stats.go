@@ -1,6 +1,6 @@
 // ==========================================================================
 // GFast自动生成控制器相关代码，只生成一次，按需修改,再次生成不会覆盖.
-// 生成日期：2024-07-04 17:54:12
+// 生成日期：2024-07-08 18:02:01
 // 生成路径: gfast/app/admin/api/daily_bridge_stats.go
 // 生成人：jimmy
 // ==========================================================================
@@ -94,8 +94,15 @@ func (c *dailyBridgeStats) Delete(r *ghttp.Request) {
 // 获取某一天的跨链统计
 func (c *dailyBridgeStats) DailyStats() {
 	param := &dao.DailyBridgeStatsSearchReq{}
-	date := time.Now()
-	service.DailyBridgeStats.DailyStats(param, date)
+	//date := time.Now()
+	layout := "2006-01-02"
+	inputDate := "2024-07-04"
+	startDate, err := time.Parse(layout, inputDate)
+	if err != nil {
+		g.Log().Error("日期格式错误:", err)
+		return
+	}
+	service.DailyBridgeStats.DailyStats(param, startDate)
 
 }
 

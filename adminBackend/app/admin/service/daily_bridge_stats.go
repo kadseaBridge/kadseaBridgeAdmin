@@ -1,6 +1,6 @@
 // ==========================================================================
 // GFast自动生成业务逻辑层相关代码，只生成一次，按需修改,再次生成不会覆盖.
-// 生成日期：2024-07-04 17:54:12
+// 生成日期：2024-07-08 18:02:01
 // 生成路径: gfast/app/admin/service/daily_bridge_stats.go
 // 生成人：jimmy
 // ==========================================================================
@@ -12,6 +12,7 @@ import (
 	"gfast/app/admin/dao"
 	"gfast/app/admin/model"
 	comModel "gfast/app/common/model"
+	commonService "gfast/app/common/service"
 	"github.com/gogf/gf/errors/gerror"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/os/gtime"
@@ -26,12 +27,38 @@ var DailyBridgeStats = new(dailyBridgeStats)
 // GetList 获取任务列表
 func (s *dailyBridgeStats) GetList(req *dao.DailyBridgeStatsSearchReq) (total, page int, list []*model.DailyBridgeStats, err error) {
 	m := dao.DailyBridgeStats.Ctx(req.Ctx)
+	//if req.CoinAddress != "" {
+	//	m = m.Where(dao.DailyBridgeStats.Columns.CoinAddress+" = ?", req.CoinAddress)
+	//}
+
 	if req.CoinName != "" {
-		m = m.Where(dao.DailyBridgeStats.Columns.CoinName+" like ?", "%"+req.CoinName+"%")
+		addressList, err := Coin.GetAddressBySymbol(req.Ctx, req.CoinName)
+		if err != nil {
+			err = gerror.New("获取coin address 失败")
+		}
+		m = m.Where(dao.DailyBridgeStats.Columns.CoinAddress+" IN(?)", addressList)
 	}
+
 	if req.ChainName != "" {
-		m = m.Where(dao.DailyBridgeStats.Columns.ChainName+" like ?", "%"+req.ChainName+"%")
+
+		chainId, err := Chain.GetIdByChainName(req.Ctx, req.ChainName)
+		if err != nil {
+			err = gerror.New("获取ChainId 失败")
+		}
+		m = m.Where(dao.DailyBridgeStats.Columns.ChainId+" = ?", chainId)
 	}
+
+	if req.StartDate != nil || req.EndDate != nil {
+		if req.StartDate != nil && req.EndDate != nil {
+			m = m.Where(dao.DailyBridgeStats.Columns.Date+" BETWEEN ? AND ?", req.StartDate, req.EndDate)
+		} else if req.StartDate != nil {
+			m = m.Where(dao.DailyBridgeStats.Columns.Date+"= ?", req.StartDate)
+		} else if req.EndDate != nil {
+			m = m.Where(dao.DailyBridgeStats.Columns.Date+"= ?", req.EndDate)
+		}
+
+	}
+
 	total, err = m.Count()
 	if err != nil {
 		g.Log().Error(err)
@@ -79,15 +106,6 @@ func (s *dailyBridgeStats) Add(ctx context.Context, req *dao.DailyBridgeStatsAdd
 	return
 }
 
-func (s *dailyBridgeStats) BatchAdd(ctx context.Context, reqs []*model.DailyBridgeStats) (err error) {
-	if len(reqs) == 0 {
-		return nil
-	}
-	// 使用 Batch 插入数据
-	_, err = dao.DailyBridgeStats.Ctx(ctx).Data(reqs).Batch(len(reqs)).Insert()
-	return err
-}
-
 // Edit 修改
 func (s *dailyBridgeStats) Edit(ctx context.Context, req *dao.DailyBridgeStatsEditReq) error {
 	_, err := dao.DailyBridgeStats.Ctx(ctx).FieldsEx(dao.DailyBridgeStats.Columns.Id, dao.DailyBridgeStats.Columns.CreatedAt).Where(dao.DailyBridgeStats.Columns.Id, req.Id).
@@ -109,6 +127,16 @@ func (s *dailyBridgeStats) DeleteByIds(ctx context.Context, ids []int) (err erro
 	return
 }
 
+// service
+func (s *dailyBridgeStats) BatchAdd(ctx context.Context, reqs []*model.DailyBridgeStats) (err error) {
+	if len(reqs) == 0 {
+		return nil
+	}
+	// 使用 Batch 插入数据
+	_, err = dao.DailyBridgeStats.Ctx(ctx).Data(reqs).Batch(len(reqs)).Insert()
+	return err
+}
+
 func (s *dailyBridgeStats) DailyStats(req *dao.DailyBridgeStatsSearchReq, date time.Time) {
 	var orders []model.BridgeOrder
 	startDate := gtime.NewFromTime(date.Truncate(24 * time.Hour))
@@ -120,8 +148,8 @@ func (s *dailyBridgeStats) DailyStats(req *dao.DailyBridgeStatsSearchReq, date t
 
 	err := m.Scan(&orders)
 	if err != nil {
-		g.Log().Error(err)
 		err = gerror.New("获取数据失败")
+		g.Log().Error(err)
 	}
 
 	statsMap := make(map[string]*model.DailyBridgeStats)
@@ -129,23 +157,10 @@ func (s *dailyBridgeStats) DailyStats(req *dao.DailyBridgeStatsSearchReq, date t
 		sourceKey := order.SourceChainId + "_" + order.SourceCoinAddress
 		sourceStats := statsMap[sourceKey]
 		if sourceStats == nil {
-			sourceChainName, err := Chain.GetNameByChainId(req.Ctx, order.SourceChainId)
-			if err != nil {
-				err = gerror.New("获取chainName失败")
-				g.Log().Error(err)
-
-			}
-			sourceCoinName, err := Coin.GetNameByAddress(req.Ctx, order.SourceCoinAddress)
-
-			if err != nil {
-				err = gerror.New("获取coinName失败")
-				g.Log().Error(err)
-
-			}
 			sourceStats = &model.DailyBridgeStats{
-				ChainName: sourceChainName,
-				CoinName:  sourceCoinName,
-				Date:      startDate,
+				ChainId:     order.SourceChainId,
+				CoinAddress: order.SourceCoinAddress,
+				Date:        startDate,
 			}
 			statsMap[sourceKey] = sourceStats
 		}
@@ -156,24 +171,10 @@ func (s *dailyBridgeStats) DailyStats(req *dao.DailyBridgeStatsSearchReq, date t
 		targetStats := statsMap[targetKey]
 		if targetStats == nil {
 
-			targetChainName, err := Chain.GetNameByChainId(req.Ctx, order.TargetChainId)
-			if err != nil {
-				err = gerror.New("获取chainName失败")
-				g.Log().Error(err)
-
-			}
-			targetCoinName, err := Coin.GetNameByAddress(req.Ctx, order.TargetCoinAddress)
-
-			if err != nil {
-				err = gerror.New("获取coinName失败")
-				g.Log().Error(err)
-
-			}
-
 			targetStats = &model.DailyBridgeStats{
-				ChainName: targetChainName,
-				CoinName:  targetCoinName,
-				Date:      startDate,
+				ChainId:     order.TargetChainId,
+				CoinAddress: order.TargetCoinAddress,
+				Date:        startDate,
 			}
 			statsMap[targetKey] = targetStats
 		}
@@ -183,6 +184,11 @@ func (s *dailyBridgeStats) DailyStats(req *dao.DailyBridgeStatsSearchReq, date t
 	stats := make([]*model.DailyBridgeStats, 0, len(statsMap))
 	for _, stat := range statsMap {
 		stat.TransferDifference = stat.TransferIn - stat.TransferOut
+		// TODO 后面补上
+		//stat.PlatformAssets = getBalance(stat.ChainId, stat.CoinAddress)
+		//if stat.PlatformAssets == "" {
+		//	stat.PlatformAssets = "0"
+		//}
 		stats = append(stats, stat)
 	}
 
@@ -191,4 +197,16 @@ func (s *dailyBridgeStats) DailyStats(req *dao.DailyBridgeStatsSearchReq, date t
 		g.Log().Error(err)
 	}
 
+}
+
+func getBalance(chainId, tokenAddress string) string {
+
+	rpc, err := Chain.GetRpcByChainId(context.Background(), chainId)
+
+	bal, err := commonService.NewRpcUtil().GetBalance(rpc, tokenAddress)
+	if err != nil {
+		g.Log().Error(gerror.New("余额失败"))
+		return ""
+	}
+	return bal
 }

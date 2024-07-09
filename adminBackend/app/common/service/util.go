@@ -1,73 +1,128 @@
 package service
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
-	"gfast/app/common/model"
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"math/big"
+	"strings"
 )
 
-var Jsondata []byte //存储json数据
+// https://data-seed-prebsc-1-s1.binance.org:8545/
+const (
+	//infuraURL     = "https://mainnet.infura.io/v3/fa99da8fb08c4b94b7e9a29f6d7f7c09" // Replace with your Infura project URL
+	//infuraURL     = "https://rpchttp.kadsea.org"
+	erc20ABI = `[{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"}]`
+	//tokenAddress  = "0x8Bb00438D421ecf26d802277A8f699D94771E092" // Replace with your ERC20 token contract address
+	walletAddress = "0x2b83877aCE845279f59919aeb912946C8b5Abe26" // Replace with the wallet address you want to check
 
-func MakeTree(Allnode []*model.TreeData, node *model.TreeData) { //参数为父节点，添加父节点的子节点指针切片
+)
 
-	childs, _ := haveChild(Allnode, node) //判断节点是否有子节点并返回
-	node.Address = " (" + fmt.Sprint(len(childs)) + ")" + node.Address
-	if childs != nil {
-		//for _, v := range childs {
-		//	fmt.Println(*v)
-		//} //打印
+type RpcUtil struct {
+}
 
-		node.Child = append(node.Child, childs[0:]...) //添加子节点
-		for _, v := range childs {                     //查询子节点的子节点，并添加到子节点
-			_, has := haveChild(Allnode, v)
-			if has {
-				MakeTree(Allnode, v) //递归添加节点
-			}
+func NewRpcUtil() *RpcUtil {
+	return &RpcUtil{}
+}
+
+func (r *RpcUtil) GetBalance(rpc, tokenAddress string) (string, error) {
+	// Connect to the Ethereum network
+	client, err := ethclient.Dial(rpc)
+	if err != nil {
+		//log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+		return "", err
+	}
+
+	// Special address for ETH
+	ethAddress := "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+
+	var balance *big.Float
+
+	if tokenAddress == ethAddress {
+		// Get ETH balance
+		balance, err = getEthBalance(client, walletAddress)
+		if err != nil {
+			//log.Fatalf("Failed to get ETH balance: %v", err)
+			return "", err
+		}
+	} else {
+		// Get ERC-20 token balance
+		balance, err = getTokenBalance(client, tokenAddress, walletAddress)
+		if err != nil {
+			//log.Fatalf("Failed to get token balance: %v", err)
+			return "", err
 		}
 	}
+	balanceStr := balance.Text('f', 18)
+
+	return balanceStr, nil
+
 }
 
-func haveChild(Allnode []*model.TreeData, node *model.TreeData) (childs []*model.TreeData, yes bool) {
-
-	for _, v := range Allnode {
-		if v.Superadd == node.Address && v.Level == 1 {
-			childs = append(childs, v)
-		}
+func getEthBalance(client *ethclient.Client, walletAddress string) (*big.Float, error) {
+	address := common.HexToAddress(walletAddress)
+	balance, err := client.BalanceAt(context.Background(), address, nil)
+	if err != nil {
+		return nil, err
 	}
-	if childs != nil {
-		yes = true
+	return new(big.Float).Quo(new(big.Float).SetInt(balance), big.NewFloat(1e18)), nil
+}
+
+func getTokenBalance(client *ethclient.Client, tokenAddress, walletAddress string) (*big.Float, error) {
+	// Parse the contract ABI
+	parsedABI, err := abi.JSON(strings.NewReader(erc20ABI))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse contract ABI: %w", err)
 	}
-	node.Address = node.Address
-	return
+	fmt.Println("Parsed contract ABI")
+
+	// Get the token decimals
+	contractAddress := common.HexToAddress(tokenAddress)
+	data, err := parsedABI.Pack("decimals")
+	if err != nil {
+		return nil, fmt.Errorf("failed to pack method call for decimals: %w", err)
+	}
+	callMsg := ethereum.CallMsg{
+		To:   &contractAddress,
+		Data: data,
+	}
+	decimalsResult, err := client.CallContract(context.Background(), callMsg, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to call contract for decimals: %w", err)
+	}
+
+	var decimals uint8
+	err = parsedABI.UnpackIntoInterface(&decimals, "decimals", decimalsResult)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unpack decimals result: %w", err)
+	}
+
+	// Get the token balance
+	ownerAddress := common.HexToAddress(walletAddress)
+	data, err = parsedABI.Pack("balanceOf", ownerAddress)
+	if err != nil {
+		return nil, fmt.Errorf("failed to pack method call for balanceOf: %w", err)
+	}
+	callMsg = ethereum.CallMsg{
+		To:   &contractAddress,
+		Data: data,
+	}
+	result, err := client.CallContract(context.Background(), callMsg, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to call contract for balanceOf: %w", err)
+	}
+
+	var tokenBalance = new(big.Int)
+	err = parsedABI.UnpackIntoInterface(&tokenBalance, "balanceOf", result)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unpack balanceOf result: %w", err)
+	}
+
+	// Convert the token balance to ETH units
+	ethBalance := new(big.Float).Quo(new(big.Float).SetInt(tokenBalance), big.NewFloat(float64(1e18)))
+
+	return ethBalance, nil
 }
-
-func TransformJson(Data *model.TreeData) string { //转为json
-
-	Jsondata, _ = json.Marshal(Data)
-
-	return string(Jsondata)
-}
-
-//func JsontoTree(jsondata []byte){  //json转struct
-//	var tree_node *model.TreeData
-//	err := json.Unmarshal(jsondata,&tree_node)
-//	fmt.Println("22222222222222",string(jsondata))
-//	if err != nil{
-//		fmt.Println(err)
-//	}else{
-//		fmt.Println(tree_node.Address,tree_node.Superadd,tree_node.Level)
-//		PrintTree(tree_node)
-//
-//	}
-//}
-//
-//
-//func PrintTree(tree_node *model.TreeData) {
-//	for _, v := range tree_node.Child {
-//		fmt.Printf("%d,%d,%s", v.Address, v.Superadd, v.Level)
-//		fmt.Println("##########")
-//		if len(v.Child) != 0 {
-//			PrintTree(v)
-//		}
-//	}
-//}
