@@ -8,12 +8,15 @@
 package api
 
 import (
+	"fmt"
 	"gfast/app/admin/dao"
 	"gfast/app/admin/service"
 	sysApi "gfast/app/system/api"
+	systemService "gfast/app/system/service"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/util/gvalid"
+	"regexp"
 	"time"
 )
 
@@ -94,12 +97,15 @@ func (c *dailyBridgeStats) Delete(r *ghttp.Request) {
 // 获取某一天的跨链统计
 func (c *dailyBridgeStats) DailyStats() {
 	param := &dao.DailyBridgeStatsSearchReq{}
-	//date := time.Now()
+	//
+	now := time.Now().AddDate(0, 0, -1)
+	// 格式化当前时间为 2024-07-09 00:00:00 +0000 UTC
 	layout := "2006-01-02"
-	inputDate := "2024-07-10"
-	startDate, err := time.Parse(layout, inputDate)
+	formattedTime := now.Format(layout)
+	// 解析格式化后的时间为 time.Time 类型
+	startDate, err := time.Parse(layout, formattedTime)
 	if err != nil {
-		g.Log().Error("日期格式错误:", err)
+		fmt.Println("解析时间时出错:", err)
 		return
 	}
 	service.DailyBridgeStats.DailyStats(param, startDate)
@@ -108,18 +114,35 @@ func (c *dailyBridgeStats) DailyStats() {
 
 func (c *dailyBridgeStats) StartDailyStats() {
 	param := &dao.DailyBridgeStatsSearchReq{}
+
+	t := systemService.TimeTaskList.GetByName("startDailyStats")
+	if t == nil {
+		return
+	}
+	inputDate := t.Param[0]
+	datePattern := `^\d{4}-\d{2}-\d{2}$`
+	dateRegex, err := regexp.Compile(datePattern)
+	if err != nil {
+		g.Log().Error("Error compiling regex::", err)
+		return
+	}
+
+	//testDate := "2024-07-09"
+	if !dateRegex.MatchString(inputDate) {
+		fmt.Println("The date format is invalid.")
+		g.Log().Error("定时任务输入的日期格式错误:")
+		return
+	}
+
 	layout := "2006-01-02"
-	inputDate := "2024-05-31"
+	//inputDate := "2024-07-09"
 	startDate, err := time.Parse(layout, inputDate)
 	if err != nil {
 		g.Log().Error("日期格式错误:", err)
 		return
 	}
-
 	// 获取当前日期
 	endDate := time.Now().Truncate(24 * time.Hour)
-
-	//service.DailyBridgeStats.DailyStats(param, date)
 
 	for date := startDate; !date.After(endDate); date = date.Add(24 * time.Hour) {
 		service.DailyBridgeStats.DailyStats(param, date)

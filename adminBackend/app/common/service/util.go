@@ -31,54 +31,58 @@ func NewRpcUtil() *RpcUtil {
 	return &RpcUtil{}
 }
 
-func (r *RpcUtil) GetEvmBalance(rpc, tokenAddress, account string) (string, error) {
+func (r *RpcUtil) GetEvmBalance(rpc, tokenAddress, account string) (float64, error) {
 	// Connect to the Ethereum network
 	client, err := ethclient.Dial(rpc)
 	if err != nil {
 		//log.Fatalf("Failed to connect to the Ethereum client: %v", err)
-		return "", err
+		return 0, err
 	}
 
 	// Special address for ETH
 	ethAddress := "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
 
-	var balance *big.Float
+	var balance float64
 
 	if tokenAddress == ethAddress {
 		// Get ETH balance
 		balance, err = getEthBalance(client, account)
 		if err != nil {
 			//log.Fatalf("Failed to get ETH balance: %v", err)
-			return "", err
+			return 0, err
 		}
 	} else {
 		// Get ERC-20 token balance
 		balance, err = getTokenBalance(client, tokenAddress, account)
 		if err != nil {
 			//log.Fatalf("Failed to get token balance: %v", err)
-			return "", err
+			return 0, err
 		}
 	}
-	balanceStr := balance.Text('f', 18)
+	//balanceStr := balance.Text('f', 18)
 
-	return balanceStr, nil
+	return balance, nil
 
 }
 
-func getEthBalance(client *ethclient.Client, walletAddress string) (*big.Float, error) {
+func getEthBalance(client *ethclient.Client, walletAddress string) (float64, error) {
 	address := common.HexToAddress(walletAddress)
 	balance, err := client.BalanceAt(context.Background(), address, nil)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	return new(big.Float).Quo(new(big.Float).SetInt(balance), big.NewFloat(1e18)), nil
+
+	ethBalanceFloat := new(big.Float).Quo(new(big.Float).SetInt(balance), big.NewFloat(1e18))
+	ethBalanceFloat64, _ := ethBalanceFloat.Float64()
+
+	return ethBalanceFloat64, nil
 }
 
-func getTokenBalance(client *ethclient.Client, tokenAddress, walletAddress string) (*big.Float, error) {
+func getTokenBalance(client *ethclient.Client, tokenAddress, walletAddress string) (float64, error) {
 	// Parse the contract ABI
 	parsedABI, err := abi.JSON(strings.NewReader(erc20ABI))
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse contract ABI: %w", err)
+		return 0, fmt.Errorf("failed to parse contract ABI: %w", err)
 	}
 	fmt.Println("Parsed contract ABI")
 
@@ -86,7 +90,7 @@ func getTokenBalance(client *ethclient.Client, tokenAddress, walletAddress strin
 	contractAddress := common.HexToAddress(tokenAddress)
 	data, err := parsedABI.Pack("decimals")
 	if err != nil {
-		return nil, fmt.Errorf("failed to pack method call for decimals: %w", err)
+		return 0, fmt.Errorf("failed to pack method call for decimals: %w", err)
 	}
 	callMsg := ethereum.CallMsg{
 		To:   &contractAddress,
@@ -94,20 +98,20 @@ func getTokenBalance(client *ethclient.Client, tokenAddress, walletAddress strin
 	}
 	decimalsResult, err := client.CallContract(context.Background(), callMsg, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to call contract for decimals: %w", err)
+		return 0, fmt.Errorf("failed to call contract for decimals: %w", err)
 	}
 
 	var decimals uint8
 	err = parsedABI.UnpackIntoInterface(&decimals, "decimals", decimalsResult)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unpack decimals result: %w", err)
+		return 0, fmt.Errorf("failed to unpack decimals result: %w", err)
 	}
 
 	// Get the token balance
 	ownerAddress := common.HexToAddress(walletAddress)
 	data, err = parsedABI.Pack("balanceOf", ownerAddress)
 	if err != nil {
-		return nil, fmt.Errorf("failed to pack method call for balanceOf: %w", err)
+		return 0, fmt.Errorf("failed to pack method call for balanceOf: %w", err)
 	}
 	callMsg = ethereum.CallMsg{
 		To:   &contractAddress,
@@ -115,22 +119,25 @@ func getTokenBalance(client *ethclient.Client, tokenAddress, walletAddress strin
 	}
 	result, err := client.CallContract(context.Background(), callMsg, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to call contract for balanceOf: %w", err)
+		return 0, fmt.Errorf("failed to call contract for balanceOf: %w", err)
 	}
 
 	var tokenBalance = new(big.Int)
 	err = parsedABI.UnpackIntoInterface(&tokenBalance, "balanceOf", result)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unpack balanceOf result: %w", err)
+		return 0, fmt.Errorf("failed to unpack balanceOf result: %w", err)
 	}
 
 	// Convert the token balance to ETH units
-	ethBalance := new(big.Float).Quo(new(big.Float).SetInt(tokenBalance), big.NewFloat(float64(1e18)))
+	//ethBalance := new(big.Float).Quo(new(big.Float).SetInt(tokenBalance), big.NewFloat(float64(1e18)))
 
-	return ethBalance, nil
+	erc20BalanceFloat := new(big.Float).Quo(new(big.Float).SetInt(tokenBalance), big.NewFloat(1e18))
+	erc20BalanceFloat64, _ := erc20BalanceFloat.Float64()
+
+	return erc20BalanceFloat64, nil
 }
 
-func (r *RpcUtil) GetTronBalance(rpc, tokenAddress, account string) (string, error) {
+func (r *RpcUtil) GetTronBalance(rpc, tokenAddress, account string) (float64, error) {
 	client := tronClient.NewGrpcClient(rpc)
 
 	err := client.Start(grpc.WithInsecure())
@@ -147,9 +154,8 @@ func (r *RpcUtil) GetTronBalance(rpc, tokenAddress, account string) (string, err
 
 		// TRX 精度处理
 		trxBalance := new(big.Float).Quo(big.NewFloat(float64(accountInfo.Balance)), big.NewFloat(1e6))
-		fmt.Printf("TRX Balance: %s\n", trxBalance.Text('f', 6))
-
-		return trxBalance.Text('f', 6), nil
+		trxBalanceFloat64, _ := trxBalance.Float64()
+		return trxBalanceFloat64, nil
 	}
 
 	// 获取 TRX 余额
@@ -159,7 +165,10 @@ func (r *RpcUtil) GetTronBalance(rpc, tokenAddress, account string) (string, err
 		log.Fatalf("Failed to get trx20Balance info: %v", err)
 	}
 	// TRX20 精度处理
+	//trx20BalanceFloat := new(big.Float).Quo(new(big.Float).SetInt(trx20Balance), big.NewFloat(1e18))
+	//return trx20BalanceFloat.Text('f', 18), nil
+
 	trx20BalanceFloat := new(big.Float).Quo(new(big.Float).SetInt(trx20Balance), big.NewFloat(1e18))
-	fmt.Printf("TRX20 Balance: %s\n", trx20BalanceFloat.Text('f', 18))
-	return trx20BalanceFloat.Text('f', 18), nil
+	trx20BalanceFloat64, _ := trx20BalanceFloat.Float64()
+	return trx20BalanceFloat64, nil
 }

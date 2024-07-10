@@ -149,8 +149,7 @@ func (s *dailyBridgeStats) DailyStats(req *dao.DailyBridgeStatsSearchReq, date t
 
 	err := m.Scan(&orders)
 	if err != nil {
-		err = gerror.New("获取数据失败")
-		g.Log().Error(err)
+		g.Log().Error("获取订单数据失败:", err)
 	}
 
 	statsMap := make(map[string]*model.DailyBridgeStats)
@@ -185,11 +184,7 @@ func (s *dailyBridgeStats) DailyStats(req *dao.DailyBridgeStatsSearchReq, date t
 	stats := make([]*model.DailyBridgeStats, 0, len(statsMap))
 	for _, stat := range statsMap {
 		stat.TransferDifference = stat.TransferIn - stat.TransferOut
-		// TODO 后面补上
-		//stat.PlatformAssets = getBalance(stat.ChainId, stat.CoinAddress)
-		//if stat.PlatformAssets == "" {
-		//	stat.PlatformAssets = "0"
-		//}
+		stat.PlatformAssets = getBalance(stat.ChainId, stat.CoinAddress)
 		stats = append(stats, stat)
 	}
 
@@ -200,32 +195,32 @@ func (s *dailyBridgeStats) DailyStats(req *dao.DailyBridgeStatsSearchReq, date t
 
 }
 
-func getBalance(chainId, tokenAddress string) string {
+func getBalance(chainId, tokenAddress string) float64 {
 
 	// tron 的财务地址
-	var tronAccount = "TYnX3QWUuoMWJfApg5DeA2HdZu5UksqBKe"
+	var tronAccount = "TRwntfF9HM4W2M4neaheG1Syu8eyjZEijm"
 	// evm的财务地址
 	var evmAccount = "0x2b83877aCE845279f59919aeb912946C8b5Abe26"
 	rpc, err := Chain.GetRpcByChainId(context.Background(), chainId)
 	if err != nil {
-		g.Log().Error(gerror.New("获取rpc失败"))
-		return ""
+		g.Log().Error("获取rpc失败:", err)
+		return 0
 	}
 
 	if strings.Contains(rpc, "tron") {
 		bal, err := commonService.NewRpcUtil().GetTronBalance(rpc, tokenAddress, tronAccount)
 
 		if err != nil {
-			g.Log().Error(gerror.New("余额失败"))
-			return ""
+			g.Log().Error("获取Tron余额失败:", err)
+			return 0
 		}
 		return bal
 
 	} else {
 		bal, err := commonService.NewRpcUtil().GetEvmBalance(rpc, tokenAddress, evmAccount)
 		if err != nil {
-			g.Log().Error(gerror.New("余额失败"))
-			return ""
+			g.Log().Error("获取Evm余额失败:", err)
+			return 0
 		}
 		return bal
 	}
