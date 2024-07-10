@@ -107,7 +107,7 @@ func (s *coin) GetAddressByNameAndChainId(ctx context.Context, symbol string, ch
 }
 
 // GetInfoById 通过id获取
-func (s *coin) GetNameByAddress(ctx context.Context, address string) (name string, err error) {
+func (s *coin) GetNameByAddressAndChainId(ctx context.Context, address string, chainId string) (name string, err error) {
 	if address == "" {
 		err = gerror.New("参数错误")
 		return
@@ -119,7 +119,7 @@ func (s *coin) GetNameByAddress(ctx context.Context, address string) (name strin
 	}
 
 	// 只选择 Name 字段
-	err = dao.Coin.Ctx(ctx).Where(dao.Coin.Columns.Address, address).Fields("name").Scan(&result)
+	err = dao.Coin.Ctx(ctx).Where(dao.Coin.Columns.Address, address).Where(dao.Coin.Columns.ChainId, chainId).Fields("name").Scan(&result)
 	if err != nil {
 		g.Log().Error(err)
 		return

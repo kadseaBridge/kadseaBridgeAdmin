@@ -96,7 +96,7 @@ func (c *dailyBridgeStats) DailyStats() {
 	param := &dao.DailyBridgeStatsSearchReq{}
 	//date := time.Now()
 	layout := "2006-01-02"
-	inputDate := "2024-07-04"
+	inputDate := "2024-07-10"
 	startDate, err := time.Parse(layout, inputDate)
 	if err != nil {
 		g.Log().Error("日期格式错误:", err)

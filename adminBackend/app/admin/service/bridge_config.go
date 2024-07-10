@@ -174,7 +174,7 @@ func (s *bridgeConfig) ExportBridgeConfigs(req *dao.BridgeConfigSearchReq) ([]by
 
 	// 填充数据
 	for i, bridgeConfig := range list {
-		coinName, err := Coin.GetNameByAddress(req.Ctx, bridgeConfig.SourceCoinAddress)
+		coinName, err := Coin.GetNameByAddressAndChainId(req.Ctx, bridgeConfig.SourceCoinAddress, bridgeConfig.SourceChainId)
 		if err != nil {
 			err = gerror.New("获取币种名称失败")
 		}

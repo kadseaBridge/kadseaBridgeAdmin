@@ -90,7 +90,7 @@ func (c *coin) Edit(r *ghttp.Request) {
 		c.FailJsonExit(r, err.(gvalid.Error).FirstString())
 	}
 	if strings.Contains(req.ChainId, "tron") {
-		if len(req.Address) != 34 {
+		if !utils.VerifyAddress(req.Address) && len(req.Address) != 34 {
 			c.FailJsonExit(r, "Coin Address error")
 		}
 	} else {
