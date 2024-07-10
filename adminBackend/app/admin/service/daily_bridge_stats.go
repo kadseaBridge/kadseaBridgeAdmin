@@ -16,6 +16,7 @@ import (
 	"github.com/gogf/gf/errors/gerror"
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/os/gtime"
+	"strings"
 	"time"
 )
 
@@ -201,12 +202,32 @@ func (s *dailyBridgeStats) DailyStats(req *dao.DailyBridgeStatsSearchReq, date t
 
 func getBalance(chainId, tokenAddress string) string {
 
+	// tron 的财务地址
+	var tronAccount = "TYnX3QWUuoMWJfApg5DeA2HdZu5UksqBKe"
+	// evm的财务地址
+	var evmAccount = "0x2b83877aCE845279f59919aeb912946C8b5Abe26"
 	rpc, err := Chain.GetRpcByChainId(context.Background(), chainId)
-
-	bal, err := commonService.NewRpcUtil().GetBalance(rpc, tokenAddress)
 	if err != nil {
-		g.Log().Error(gerror.New("余额失败"))
+		g.Log().Error(gerror.New("获取rpc失败"))
 		return ""
 	}
-	return bal
+
+	if strings.Contains(rpc, "tron") {
+		bal, err := commonService.NewRpcUtil().GetTronBalance(rpc, tokenAddress, tronAccount)
+
+		if err != nil {
+			g.Log().Error(gerror.New("余额失败"))
+			return ""
+		}
+		return bal
+
+	} else {
+		bal, err := commonService.NewRpcUtil().GetEvmBalance(rpc, tokenAddress, evmAccount)
+		if err != nil {
+			g.Log().Error(gerror.New("余额失败"))
+			return ""
+		}
+		return bal
+	}
+
 }

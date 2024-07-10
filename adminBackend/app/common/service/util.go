@@ -7,6 +7,9 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	tronClient "github.com/fbsobreira/gotron-sdk/pkg/client"
+	"google.golang.org/grpc"
+	"log"
 	"math/big"
 	"strings"
 )
@@ -17,7 +20,7 @@ const (
 	//infuraURL     = "https://rpchttp.kadsea.org"
 	erc20ABI = `[{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"}]`
 	//tokenAddress  = "0x8Bb00438D421ecf26d802277A8f699D94771E092" // Replace with your ERC20 token contract address
-	walletAddress = "0x2b83877aCE845279f59919aeb912946C8b5Abe26" // Replace with the wallet address you want to check
+	//walletAddress = "0x2b83877aCE845279f59919aeb912946C8b5Abe26" // Replace with the wallet address you want to check
 
 )
 
@@ -28,7 +31,7 @@ func NewRpcUtil() *RpcUtil {
 	return &RpcUtil{}
 }
 
-func (r *RpcUtil) GetBalance(rpc, tokenAddress string) (string, error) {
+func (r *RpcUtil) GetEvmBalance(rpc, tokenAddress, account string) (string, error) {
 	// Connect to the Ethereum network
 	client, err := ethclient.Dial(rpc)
 	if err != nil {
@@ -43,14 +46,14 @@ func (r *RpcUtil) GetBalance(rpc, tokenAddress string) (string, error) {
 
 	if tokenAddress == ethAddress {
 		// Get ETH balance
-		balance, err = getEthBalance(client, walletAddress)
+		balance, err = getEthBalance(client, account)
 		if err != nil {
 			//log.Fatalf("Failed to get ETH balance: %v", err)
 			return "", err
 		}
 	} else {
 		// Get ERC-20 token balance
-		balance, err = getTokenBalance(client, tokenAddress, walletAddress)
+		balance, err = getTokenBalance(client, tokenAddress, account)
 		if err != nil {
 			//log.Fatalf("Failed to get token balance: %v", err)
 			return "", err
@@ -125,4 +128,38 @@ func getTokenBalance(client *ethclient.Client, tokenAddress, walletAddress strin
 	ethBalance := new(big.Float).Quo(new(big.Float).SetInt(tokenBalance), big.NewFloat(float64(1e18)))
 
 	return ethBalance, nil
+}
+
+func (r *RpcUtil) GetTronBalance(rpc, tokenAddress, account string) (string, error) {
+	client := tronClient.NewGrpcClient(rpc)
+
+	err := client.Start(grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Failed to connect to Tron client: %v", err)
+	}
+	defer client.Stop()
+
+	if tokenAddress == "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE" {
+		accountInfo, err := client.GetAccount(account)
+		if err != nil {
+			log.Fatalf("Failed to get account info: %v", err)
+		}
+
+		// TRX 精度处理
+		trxBalance := new(big.Float).Quo(big.NewFloat(float64(accountInfo.Balance)), big.NewFloat(1e6))
+		fmt.Printf("TRX Balance: %s\n", trxBalance.Text('f', 6))
+
+		return trxBalance.Text('f', 6), nil
+	}
+
+	// 获取 TRX 余额
+
+	trx20Balance, err := client.TRC20ContractBalance(account, tokenAddress)
+	if err != nil {
+		log.Fatalf("Failed to get trx20Balance info: %v", err)
+	}
+	// TRX20 精度处理
+	trx20BalanceFloat := new(big.Float).Quo(new(big.Float).SetInt(trx20Balance), big.NewFloat(1e18))
+	fmt.Printf("TRX20 Balance: %s\n", trx20BalanceFloat.Text('f', 18))
+	return trx20BalanceFloat.Text('f', 18), nil
 }
