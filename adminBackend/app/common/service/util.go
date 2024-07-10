@@ -1,73 +1,174 @@
 package service
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
-	"gfast/app/common/model"
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	tronClient "github.com/fbsobreira/gotron-sdk/pkg/client"
+	"google.golang.org/grpc"
+	"log"
+	"math/big"
+	"strings"
 )
 
-var Jsondata []byte //存储json数据
+// https://data-seed-prebsc-1-s1.binance.org:8545/
+const (
+	//infuraURL     = "https://mainnet.infura.io/v3/fa99da8fb08c4b94b7e9a29f6d7f7c09" // Replace with your Infura project URL
+	//infuraURL     = "https://rpchttp.kadsea.org"
+	erc20ABI = `[{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"}]`
+	//tokenAddress  = "0x8Bb00438D421ecf26d802277A8f699D94771E092" // Replace with your ERC20 token contract address
+	//walletAddress = "0x2b83877aCE845279f59919aeb912946C8b5Abe26" // Replace with the wallet address you want to check
 
-func MakeTree(Allnode []*model.TreeData, node *model.TreeData) { //参数为父节点，添加父节点的子节点指针切片
+)
 
-	childs, _ := haveChild(Allnode, node) //判断节点是否有子节点并返回
-	node.Address = " (" + fmt.Sprint(len(childs)) + ")" + node.Address
-	if childs != nil {
-		//for _, v := range childs {
-		//	fmt.Println(*v)
-		//} //打印
+type RpcUtil struct {
+}
 
-		node.Child = append(node.Child, childs[0:]...) //添加子节点
-		for _, v := range childs {                     //查询子节点的子节点，并添加到子节点
-			_, has := haveChild(Allnode, v)
-			if has {
-				MakeTree(Allnode, v) //递归添加节点
-			}
+func NewRpcUtil() *RpcUtil {
+	return &RpcUtil{}
+}
+
+func (r *RpcUtil) GetEvmBalance(rpc, tokenAddress, account string) (float64, error) {
+	// Connect to the Ethereum network
+	client, err := ethclient.Dial(rpc)
+	if err != nil {
+		//log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+		return 0, err
+	}
+
+	// Special address for ETH
+	ethAddress := "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+
+	var balance float64
+
+	if tokenAddress == ethAddress {
+		// Get ETH balance
+		balance, err = getEthBalance(client, account)
+		if err != nil {
+			//log.Fatalf("Failed to get ETH balance: %v", err)
+			return 0, err
+		}
+	} else {
+		// Get ERC-20 token balance
+		balance, err = getTokenBalance(client, tokenAddress, account)
+		if err != nil {
+			//log.Fatalf("Failed to get token balance: %v", err)
+			return 0, err
 		}
 	}
+	//balanceStr := balance.Text('f', 18)
+
+	return balance, nil
+
 }
 
-func haveChild(Allnode []*model.TreeData, node *model.TreeData) (childs []*model.TreeData, yes bool) {
+func getEthBalance(client *ethclient.Client, walletAddress string) (float64, error) {
+	address := common.HexToAddress(walletAddress)
+	balance, err := client.BalanceAt(context.Background(), address, nil)
+	if err != nil {
+		return 0, err
+	}
 
-	for _, v := range Allnode {
-		if v.Superadd == node.Address && v.Level == 1 {
-			childs = append(childs, v)
+	ethBalanceFloat := new(big.Float).Quo(new(big.Float).SetInt(balance), big.NewFloat(1e18))
+	ethBalanceFloat64, _ := ethBalanceFloat.Float64()
+
+	return ethBalanceFloat64, nil
+}
+
+func getTokenBalance(client *ethclient.Client, tokenAddress, walletAddress string) (float64, error) {
+	// Parse the contract ABI
+	parsedABI, err := abi.JSON(strings.NewReader(erc20ABI))
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse contract ABI: %w", err)
+	}
+	fmt.Println("Parsed contract ABI")
+
+	// Get the token decimals
+	contractAddress := common.HexToAddress(tokenAddress)
+	data, err := parsedABI.Pack("decimals")
+	if err != nil {
+		return 0, fmt.Errorf("failed to pack method call for decimals: %w", err)
+	}
+	callMsg := ethereum.CallMsg{
+		To:   &contractAddress,
+		Data: data,
+	}
+	decimalsResult, err := client.CallContract(context.Background(), callMsg, nil)
+	if err != nil {
+		return 0, fmt.Errorf("failed to call contract for decimals: %w", err)
+	}
+
+	var decimals uint8
+	err = parsedABI.UnpackIntoInterface(&decimals, "decimals", decimalsResult)
+	if err != nil {
+		return 0, fmt.Errorf("failed to unpack decimals result: %w", err)
+	}
+
+	// Get the token balance
+	ownerAddress := common.HexToAddress(walletAddress)
+	data, err = parsedABI.Pack("balanceOf", ownerAddress)
+	if err != nil {
+		return 0, fmt.Errorf("failed to pack method call for balanceOf: %w", err)
+	}
+	callMsg = ethereum.CallMsg{
+		To:   &contractAddress,
+		Data: data,
+	}
+	result, err := client.CallContract(context.Background(), callMsg, nil)
+	if err != nil {
+		return 0, fmt.Errorf("failed to call contract for balanceOf: %w", err)
+	}
+
+	var tokenBalance = new(big.Int)
+	err = parsedABI.UnpackIntoInterface(&tokenBalance, "balanceOf", result)
+	if err != nil {
+		return 0, fmt.Errorf("failed to unpack balanceOf result: %w", err)
+	}
+
+	// Convert the token balance to ETH units
+	//ethBalance := new(big.Float).Quo(new(big.Float).SetInt(tokenBalance), big.NewFloat(float64(1e18)))
+
+	erc20BalanceFloat := new(big.Float).Quo(new(big.Float).SetInt(tokenBalance), big.NewFloat(1e18))
+	erc20BalanceFloat64, _ := erc20BalanceFloat.Float64()
+
+	return erc20BalanceFloat64, nil
+}
+
+func (r *RpcUtil) GetTronBalance(rpc, tokenAddress, account string) (float64, error) {
+	client := tronClient.NewGrpcClient(rpc)
+
+	err := client.Start(grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Failed to connect to Tron client: %v", err)
+	}
+	defer client.Stop()
+
+	if tokenAddress == "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE" {
+		accountInfo, err := client.GetAccount(account)
+		if err != nil {
+			log.Fatalf("Failed to get account info: %v", err)
 		}
+
+		// TRX 精度处理
+		trxBalance := new(big.Float).Quo(big.NewFloat(float64(accountInfo.Balance)), big.NewFloat(1e6))
+		trxBalanceFloat64, _ := trxBalance.Float64()
+		return trxBalanceFloat64, nil
 	}
-	if childs != nil {
-		yes = true
+
+	// 获取 TRX 余额
+
+	trx20Balance, err := client.TRC20ContractBalance(account, tokenAddress)
+	if err != nil {
+		log.Fatalf("Failed to get trx20Balance info: %v", err)
 	}
-	node.Address = node.Address
-	return
+	// TRX20 精度处理
+	//trx20BalanceFloat := new(big.Float).Quo(new(big.Float).SetInt(trx20Balance), big.NewFloat(1e18))
+	//return trx20BalanceFloat.Text('f', 18), nil
+
+	trx20BalanceFloat := new(big.Float).Quo(new(big.Float).SetInt(trx20Balance), big.NewFloat(1e18))
+	trx20BalanceFloat64, _ := trx20BalanceFloat.Float64()
+	return trx20BalanceFloat64, nil
 }
-
-func TransformJson(Data *model.TreeData) string { //转为json
-
-	Jsondata, _ = json.Marshal(Data)
-
-	return string(Jsondata)
-}
-
-//func JsontoTree(jsondata []byte){  //json转struct
-//	var tree_node *model.TreeData
-//	err := json.Unmarshal(jsondata,&tree_node)
-//	fmt.Println("22222222222222",string(jsondata))
-//	if err != nil{
-//		fmt.Println(err)
-//	}else{
-//		fmt.Println(tree_node.Address,tree_node.Superadd,tree_node.Level)
-//		PrintTree(tree_node)
-//
-//	}
-//}
-//
-//
-//func PrintTree(tree_node *model.TreeData) {
-//	for _, v := range tree_node.Child {
-//		fmt.Printf("%d,%d,%s", v.Address, v.Superadd, v.Level)
-//		fmt.Println("##########")
-//		if len(v.Child) != 0 {
-//			PrintTree(v)
-//		}
-//	}
-//}

@@ -156,15 +156,47 @@
     <el-table v-loading="loading" :data="bridgeOrderList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="序号" align="center" prop="id" />
-      <el-table-column label="转出币种" align="center" prop="sourceCoinName" />
-      <el-table-column label="转入币种" align="center" prop="targetCoinName" />
-      <el-table-column label="转出链" align="center" prop="sourceChainName" />
+<!--      <el-table-column label="转出币种" align="center" prop="sourceCoinAddress" />-->
+      <el-table-column label="转出币种" align="center" prop="sourceCoinAddress" :formatter="sourceCoinAddressFormat" width="150">
+        <template slot-scope="scope">
+          {{ sourceCoinAddressFormat(scope.row) }}
+        </template>
+      </el-table-column>
+<!--      <el-table-column label="转入币种" align="center" prop="targetCoinAddress" />-->
+      <el-table-column label="转入币种" align="center" prop="targetCoinAddress" :formatter="targetCoinAddressFormat" width="150">
+        <template slot-scope="scope">
+          {{ targetCoinAddressFormat(scope.row) }}
+        </template>
+      </el-table-column>
+<!--      <el-table-column label="转出链" align="center" prop="sourceChainName" />-->
+      <el-table-column label="转出链" align="center" prop="sourceChainId" :formatter="sourceChainIdFormat" width="150">
+        <template slot-scope="scope">
+          {{ sourceChainIdFormat(scope.row) }}
+        </template>
+      </el-table-column>
+<!--targetChainIdFormat  sourceCoinAddressFormat -->
+<!--      <el-table-column label="转入链" align="center" prop="targetChainName" />-->
+      <el-table-column label="转入链" align="center" prop="targetChainId" :formatter="targetChainIdFormat" width="150">
+        <template slot-scope="scope">
+          {{ targetChainIdFormat(scope.row) }}
+        </template>
+      </el-table-column>
 
-      <el-table-column label="转入链" align="center" prop="targetChainName" />
-
-      <el-table-column label="数量" align="center" prop="amount" />
-      <el-table-column label="手续费" align="center" prop="fee" />
+      <el-table-column label="数量" align="center" prop="amount">
+      <template slot-scope="scope">
+        <span>{{ formatNumber(scope.row.amount) }}</span>
+      </template>
+      </el-table-column>
+      <el-table-column label="手续费" align="center" prop="fee" >
+        <template slot-scope="scope">
+          <span>{{ formatNumber(scope.row.fee) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="gas费" align="center" prop="gasFee" />
+<!--        <template slot-scope="scope">-->
+<!--          <span>{{ formatNumber(scope.row.gasFee) }}</span>-->
+<!--        </template>-->
+<!--      </el-table-column>-->
 
       <!-- 转入钱包地址 -->
       <el-table-column label="转入钱包地址" align="center">
@@ -292,6 +324,8 @@ import {
 } from "@/api/admin/bridgeOrder";
 import ClipboardJS from 'clipboard';
 import {exportCoin} from "@/api/admin/coin";
+import { BigNumber } from 'bignumber.js';
+import {listCoin} from "@/api/admin/bridgeConfig";
 export default {
   components:{},
   name: "BridgeOrder",
@@ -317,10 +351,15 @@ export default {
       sourceChainIdOptions: [],
       // targetChainIdOptions关联表数据
       targetChainIdOptions: [],
+      sourceCoinAddressOptions: [],
       // statusOptions字典数据
       statusOptions: [],
       // manualReviewStatus
       manualReviewStatus:[],
+      sourceCoinAddress:undefined,
+      coinAddressMap: {
+
+      },
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -356,7 +395,8 @@ export default {
   },
   created() {
     this.getChainItems()
-    this.getChainItems()
+    this.getCoinItems()
+    // this.getChainItems()
     this.getDicts("bridge_order_status").then(response => {
       this.statusOptions = response.data.values||[];
     });
@@ -374,6 +414,37 @@ export default {
         this.sourceChainIdOptions = this.setItems(res, 'chainId', 'name')
         this.targetChainIdOptions = this.sourceChainIdOptions
       })
+    },
+
+    getCoinItems() {
+      this.getItems(listCoin, { pageSize: 10000 }).then(res => {
+        console.log('Coin items response:', res);
+        if (res && res.data && res.data.list) {
+          this.sourceCoinAddressOptions = res.data.list.map(item => ({
+            key: item.address,
+            value: item.symbol,
+            chainId: item.chainId // 确保每个币种有chainId字段
+          }));
+
+          // 更新 coinAddressMap
+          this.coinAddressMap = res.data.list.reduce((map, item) => {
+            map[`${item.address}-${item.chainId}`] = item.symbol;
+            return map;
+          }, {});
+        } else {
+          console.error('Invalid coin items response:', res);
+        }
+      }).catch(error => {
+        console.error('Error fetching coin items:', error);
+      });
+    },
+
+    formatNumber(number) {
+      if (typeof number === 'number') {
+        let bigNumber = new BigNumber(number);
+        return bigNumber.toFixed().replace(/(\.\d*?[1-9])0+$/g, '$1').replace(/\.0+$/, '');
+      }
+      return number;
     },
 
     /** 查询跨链记录列表 */
@@ -412,6 +483,23 @@ export default {
         return "跨链失败"
       }
 
+    },
+
+    sourceCoinAddressFormat(row, column) {
+      return this.selectItemsLabel2(this.sourceCoinAddressOptions, row.sourceCoinAddress, row.sourceChainId);
+    },
+
+    targetCoinAddressFormat(row, column) {
+      return this.selectItemsLabel2(this.sourceCoinAddressOptions, row.targetCoinAddress, row.targetChainId);
+    },
+
+    selectItemsLabel2(datas, address, chainId) {
+      for (let item of datas) {
+        if (item.key === String(address) && item.chainId === String(chainId)) {
+          return item.value;
+        }
+      }
+      return null; // 或者返回一个默认值
     },
 
     cancel() {
@@ -502,20 +590,6 @@ export default {
           }
         }
       });
-    },
-    /** 删除按钮操作 */
-    handleDelete(row) {
-      const ids = row.id || this.ids;
-      this.$confirm('是否确认删除跨链记录编号为"' + ids + '"的数据项?', "警告", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        }).then(function() {
-          return delBridgeOrder(ids);
-        }).then(() => {
-          this.getList();
-          this.msgSuccess("删除成功");
-        }).catch(function() {});
     },
 
     /** 导出按钮操作 */

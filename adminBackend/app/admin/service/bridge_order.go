@@ -130,6 +130,10 @@ func (s *bridgeOrder) GetList(req *dao.BridgeOrderSearchReq) (total, page int, o
 
 	var list []*model.BridgeOrder
 	err = m.Page(page, req.PageSize).Order(order).Scan(&list)
+	if err != nil {
+		g.Log().Error(err)
+		err = gerror.New("获取数据失败")
+	}
 
 	rsp := make([]*model.BridgeOrderRsp, len(list))
 
@@ -139,58 +143,62 @@ func (s *bridgeOrder) GetList(req *dao.BridgeOrderSearchReq) (total, page int, o
 		if err != nil {
 			err = gerror.New("获取链名称名称失败")
 		}
-		sourceCoinName, err := Coin.GetNameByAddress(req.Ctx, order.SourceCoinAddress)
-		if err != nil {
-			err = gerror.New("获取币种名称失败")
+		if order.SourceCoinAddress == "TXka46PPwttNPWfFDPtt3GUodbPThyufaV" {
+			order.SourceCoinAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
 		}
 
-		targetCoinName, err := Coin.GetNameByAddress(req.Ctx, order.TargetCoinAddress)
-		if err != nil {
-			err = gerror.New("获取币种名称失败")
+		if order.TargetCoinAddress == "TXka46PPwttNPWfFDPtt3GUodbPThyufaV" {
+			order.TargetCoinAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
 		}
 
-		sourceChainName, err := Chain.GetNameByChainId(req.Ctx, order.SourceChainId)
-		if err != nil {
-			err = gerror.New("获取链名称名称失败")
-		}
-
-		targetChainName, err := Chain.GetNameByChainId(req.Ctx, order.TargetChainId)
-		if err != nil {
-			err = gerror.New("获取链名称名称失败")
-		}
+		//sourceCoinName, err := Coin.GetNameByAddress(req.Ctx, order.SourceCoinAddress)
+		//if err != nil {
+		//	err = gerror.New("获取币种名称失败")
+		//}
+		//
+		//targetCoinName, err := Coin.GetNameByAddress(req.Ctx, order.TargetCoinAddress)
+		//if err != nil {
+		//	err = gerror.New("获取币种名称失败")
+		//}
+		//
+		//sourceChainName, err := Chain.GetNameByChainId(req.Ctx, order.SourceChainId)
+		//if err != nil {
+		//	err = gerror.New("获取链名称名称失败")
+		//}
+		//
+		//targetChainName, err := Chain.GetNameByChainId(req.Ctx, order.TargetChainId)
+		//if err != nil {
+		//	err = gerror.New("获取链名称名称失败")
+		//}
 		rsp[i] = &model.BridgeOrderRsp{
-			Id:              order.Id,
-			SourceAddress:   order.SourceAddress,
-			TargetAddress:   order.TargetAddress,
-			SourceCoinName:  sourceCoinName,
-			TargetCoinName:  targetCoinName,
-			SourceChainName: sourceChainName,
-			TargetChainName: targetChainName,
-			InHash:          tx,
-			OutHash:         order.TransactionHash,
-			OrderId:         order.OrderId,
-			Amount:          order.Amount,
-			Status:          order.Status,
-			CreateAt:        order.CreateAt,
-			UpdateAt:        order.UpdateAt,
-			BlockNumber:     order.BlockNumber,
-			Fee:             order.Fee,
-			GasFee:          gas,
-			Remark:          order.Remark,
+			Id:                order.Id,
+			SourceAddress:     order.SourceAddress,
+			TargetAddress:     order.TargetAddress,
+			SourceCoinAddress: order.SourceCoinAddress,
+			TargetCoinAddress: order.TargetCoinAddress,
+			SourceChainId:     order.SourceChainId,
+			TargetChainId:     order.TargetChainId,
+			InHash:            tx,
+			OutHash:           order.TransactionHash,
+			OrderId:           order.OrderId,
+			Amount:            order.Amount,
+			Status:            order.Status,
+			CreateAt:          order.CreateAt,
+			UpdateAt:          order.UpdateAt,
+			BlockNumber:       order.BlockNumber,
+			Fee:               order.Fee,
+			GasFee:            gas,
+			Remark:            order.Remark,
 		}
 	}
 
 	orderlist = rsp
 
-	if err != nil {
-		g.Log().Error(err)
-		err = gerror.New("获取数据失败")
-	}
 	return
 }
 
 // GetAll
-func (s *bridgeOrder) GetListAll(req *dao.BridgeOrderSearchReq) (total, page int, orderlist []*model.BridgeOrderRsp, err error) {
+func (s *bridgeOrder) GetListAll(req *dao.BridgeOrderSearchReq) (total, page int, orderlist []*model.BridgeOrderAllRsp, err error) {
 	m := dao.BridgeOrder.Ctx(req.Ctx)
 	if req.SourceAddress != "" {
 		m = m.Where(dao.BridgeOrder.Columns.SourceAddress+" = ?", req.SourceAddress)
@@ -271,13 +279,7 @@ func (s *bridgeOrder) GetListAll(req *dao.BridgeOrderSearchReq) (total, page int
 		err = gerror.New("获取总行数失败")
 		return
 	}
-	//if req.PageNum == 0 {
-	//	req.PageNum = 1
-	//}
-	//page = req.PageNum
-	//if req.PageSize == 0 {
-	//	req.PageSize = comModel.PageSize
-	//}
+
 	order := "id asc"
 	if req.OrderBy != "" {
 		order = req.OrderBy
@@ -286,20 +288,29 @@ func (s *bridgeOrder) GetListAll(req *dao.BridgeOrderSearchReq) (total, page int
 	var list []*model.BridgeOrder
 	err = m.Order(order).Scan(&list)
 
-	rsp := make([]*model.BridgeOrderRsp, len(list))
+	rsp := make([]*model.BridgeOrderAllRsp, len(list))
 
 	for i, order := range list {
 
 		tx, gas, err := PayDetail.GetGasAndTxByOrderId(req.Ctx, order.OrderId)
 		if err != nil {
-			err = gerror.New("获取链名称名称失败")
+			err = gerror.New("获取InHash、gas失败")
 		}
-		sourceCoinName, err := Coin.GetNameByAddress(req.Ctx, order.SourceCoinAddress)
+
+		if order.SourceCoinAddress == "TXka46PPwttNPWfFDPtt3GUodbPThyufaV" {
+			order.SourceCoinAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+		}
+
+		sourceCoinName, err := Coin.GetNameByAddressAndChainId(req.Ctx, order.SourceCoinAddress, order.SourceChainId)
 		if err != nil {
 			err = gerror.New("获取币种名称失败")
 		}
 
-		targetCoinName, err := Coin.GetNameByAddress(req.Ctx, order.TargetCoinAddress)
+		if order.TargetCoinAddress == "TXka46PPwttNPWfFDPtt3GUodbPThyufaV" {
+			order.TargetCoinAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+		}
+
+		targetCoinName, err := Coin.GetNameByAddressAndChainId(req.Ctx, order.TargetCoinAddress, order.TargetChainId)
 		if err != nil {
 			err = gerror.New("获取币种名称失败")
 		}
@@ -313,7 +324,7 @@ func (s *bridgeOrder) GetListAll(req *dao.BridgeOrderSearchReq) (total, page int
 		if err != nil {
 			err = gerror.New("获取链名称名称失败")
 		}
-		rsp[i] = &model.BridgeOrderRsp{
+		rsp[i] = &model.BridgeOrderAllRsp{
 			Id:              order.Id,
 			SourceAddress:   order.SourceAddress,
 			TargetAddress:   order.TargetAddress,

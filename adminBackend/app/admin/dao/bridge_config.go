@@ -36,27 +36,31 @@ type BridgeConfigSearchReq struct {
 
 // BridgeConfigAddReq 添加操作请求参数
 type BridgeConfigAddReq struct {
-	SourceChainId     string  `p:"sourceChainId" v:"required#当前链不能为空"`
-	TargetChainId     string  `p:"targetChainId" v:"required#对手链不能为空"`
-	SourceCoinAddress string  `p:"sourceCoinAddress" v:"required#币种不能为空"`
-	FeeFixed          float64 `p:"feeFixed" v:"required#固定金额手续费，不能为空"`
-	FeePercent        float64 `p:"feePercent" v:"required#手续费百分比，如果不需要则设置为0不能为空"`
-	DayTotal          float64 `p:"dayTotal" v:"required#跨入每日审核数量不能为空"`
-	OnceTotal         float64 `p:"onceTotal" v:"required#跨入单次审核数量不能为空"`
-	IsEnable          int     `p:"isEnable" v:"required#状态不能为空"`
-	TargetCoinAddress string  `p:"targetCoinAddress"`
+	SourceChainId      string  `p:"sourceChainId" v:"required#当前链不能为空"`
+	TargetChainId      string  `p:"targetChainId" v:"required#对手链不能为空"`
+	SourceCoinAddress  string  `p:"sourceCoinAddress" v:"required#币种不能为空"`
+	FeeFixed           float64 `p:"feeFixed" v:"required#固定金额手续费，不能为空"`
+	FeePercent         float64 `p:"feePercent" v:"required#手续费百分比，如果不需要则设置为0不能为空"`
+	DayTotal           float64 `p:"dayTotal" v:"required#跨入每日审核数量不能为空"`
+	OnceTotal          float64 `p:"onceTotal" v:"required#跨入单次审核数量不能为空"`
+	IsEnable           int     `p:"isEnable" v:"required#状态不能为空"`
+	TargetCoinAddress  string  `p:"targetCoinAddress"`
+	tronNotActiveFee   float64 `p:"tronNotActiveFee"`
+	tronTrc20HaveNoFee float64 `p:"tronTrc20HaveNoFee"`
 }
 
 // BridgeConfigEditReq 修改操作请求参数
 type BridgeConfigEditReq struct {
-	Id                int64   `p:"id" v:"required#主键ID不能为空"`
-	SourceChainId     string  `p:"sourceChainId" v:"required#当前链不能为空"`
-	TargetChainId     string  `p:"targetChainId" v:"required#对手链不能为空"`
-	SourceCoinAddress string  `p:"sourceCoinAddress" v:"required#币种不能为空"`
-	FeeFixed          float64 `p:"feeFixed" v:"required#固定金额手续费，不能为空"`
-	FeePercent        float64 `p:"feePercent" v:"required#手续费百分比，如果不需要则设置为0不能为空"`
-	DayTotal          float64 `p:"dayTotal" v:"required#跨入每日审核数量不能为空"`
-	OnceTotal         float64 `p:"onceTotal" v:"required#跨入单次审核数量不能为空"`
-	IsEnable          int     `p:"isEnable" v:"required#状态不能为空"`
-	TargetCoinAddress string  `p:"targetCoinAddress"`
+	Id                 int64   `p:"id" v:"required#主键ID不能为空"`
+	SourceChainId      string  `p:"sourceChainId" v:"required#当前链不能为空"`
+	TargetChainId      string  `p:"targetChainId" v:"required#对手链不能为空"`
+	SourceCoinAddress  string  `p:"sourceCoinAddress" v:"required#币种不能为空"`
+	FeeFixed           float64 `p:"feeFixed" v:"required#固定金额手续费，不能为空"`
+	FeePercent         float64 `p:"feePercent" v:"required#手续费百分比，如果不需要则设置为0不能为空"`
+	DayTotal           float64 `p:"dayTotal" v:"required#跨入每日审核数量不能为空"`
+	OnceTotal          float64 `p:"onceTotal" v:"required#跨入单次审核数量不能为空"`
+	IsEnable           int     `p:"isEnable" v:"required#状态不能为空"`
+	TargetCoinAddress  string  `p:"targetCoinAddress"`
+	TronNotActiveFee   float64 `p:"tronNotActiveFee"`
+	TronTrc20HaveNoFee float64 `p:"tronTrc20HaveNoFee"`
 }

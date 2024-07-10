@@ -16,6 +16,7 @@ import (
 	"github.com/gogf/gf/frame/g"
 	"github.com/gogf/gf/net/ghttp"
 	"github.com/gogf/gf/util/gvalid"
+	"strings"
 )
 
 type coin struct {
@@ -52,8 +53,14 @@ func (c *coin) Add(r *ghttp.Request) {
 		c.FailJsonExit(r, err.(gvalid.Error).FirstString())
 	}
 
-	if req.Address != "" && !utils.VerifyAddress(req.Address) {
-		c.FailJsonExit(r, "coin address error")
+	if strings.Contains(req.ChainId, "tron") {
+		if len(req.Address) != 34 {
+			c.FailJsonExit(r, "Coin Address error")
+		}
+	} else {
+		if !utils.VerifyAddress(req.Address) {
+			c.FailJsonExit(r, "Coin Address error")
+		}
 	}
 
 	// 所有新添加的币种都是上架状态
@@ -82,8 +89,14 @@ func (c *coin) Edit(r *ghttp.Request) {
 	if err := r.Parse(&req); err != nil {
 		c.FailJsonExit(r, err.(gvalid.Error).FirstString())
 	}
-	if req.Address != "" && !utils.VerifyAddress(req.Address) {
-		c.FailJsonExit(r, "coin address error")
+	if strings.Contains(req.ChainId, "tron") {
+		if !utils.VerifyAddress(req.Address) && len(req.Address) != 34 {
+			c.FailJsonExit(r, "Coin Address error")
+		}
+	} else {
+		if !utils.VerifyAddress(req.Address) {
+			c.FailJsonExit(r, "Coin Address error")
+		}
 	}
 
 	err := service.Coin.Edit(r.GetCtx(), req)

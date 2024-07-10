@@ -114,10 +114,6 @@ func (s *payDetail) GetGasAndTxByOrderId(ctx context.Context, orderId string) (t
 		g.Log().Error(err)
 		return
 	}
-	//if result.TransactionHash == "" ||  {
-	//	err = gerror.New("获取信息失败")
-	//	return
-	//}
 
 	tx = result.TransactionHash
 	gas = result.PayGasFee

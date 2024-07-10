@@ -1,7 +1,7 @@
 // ==========================================================================
 // GFast自动生成路由代码，只生成一次，按需修改,再次生成不会覆盖.
-// 生成日期：2024-06-14 17:06:57
-// 生成路径: adminBackend/app/admin/router/daily_bridge_stats.go
+// 生成日期：2024-07-08 18:02:01
+// 生成路径: gfast/app/admin/router/daily_bridge_stats.go
 // 生成人：jimmy
 // ==========================================================================
 
@@ -15,7 +15,7 @@ import (
 	"github.com/gogf/gf/net/ghttp"
 )
 
-// 加载路由
+//加载路由
 func init() {
 	s := g.Server()
 	s.Group("/", func(group *ghttp.RouterGroup) {
