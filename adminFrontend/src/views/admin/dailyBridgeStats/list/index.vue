@@ -86,7 +86,7 @@
           <span>{{ formatNumber(scope.row.fee) }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="平台资产" align="center" prop="platformAssets" >
+      <el-table-column label="充币地址资产" align="center" prop="platformAssets" >
         <template slot-scope="scope">
           <span>{{ formatNumber(scope.row.platformAssets) }}</span>
         </template>
