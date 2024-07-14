@@ -98,7 +98,8 @@ func (c *dailyBridgeStats) Delete(r *ghttp.Request) {
 func (c *dailyBridgeStats) DailyStats() {
 	param := &dao.DailyBridgeStatsSearchReq{}
 	//
-	now := time.Now().AddDate(0, 0, -1)
+	//now := time.Now().AddDate(0, 0, -1)
+	now := time.Now()
 	// 格式化当前时间为 2024-07-09 00:00:00 +0000 UTC
 	layout := "2006-01-02"
 	formattedTime := now.Format(layout)
