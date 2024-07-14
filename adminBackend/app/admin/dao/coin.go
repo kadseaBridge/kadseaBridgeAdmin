@@ -55,7 +55,7 @@ type CoinEditReq struct {
 	ChainId   string `p:"chainId" v:"required#链Id不能为空"`
 	Address   string `p:"address"`
 	IsEnable  int    `p:"isEnable" v:"required#是否上架不能为空"`
-	TokenType string `p:"tokenType" v:"required#币种类型不能为空"`
+	TokenType string `p:"type" v:"required#币种类型不能为空"`
 	Decimals  int    `p:"decimals" v:"required#精度不能为空"`
 	Icon      string `p:"icon"`
 }
