@@ -164,8 +164,10 @@ func (s *dailyBridgeStats) DailyStats(req *dao.DailyBridgeStatsSearchReq, date t
 			}
 			statsMap[sourceKey] = sourceStats
 		}
-		sourceStats.TransferOut += order.Amount - order.Fee
-		sourceStats.Fee += order.Fee
+		// float64 精度丢失问题
+		sourceStats.TransferOut = (sourceStats.TransferOut*100000000 + order.Amount*100000000 - order.Fee*100000000) / 100000000
+
+		sourceStats.Fee = (sourceStats.Fee*100000000 + order.Fee*100000000) / 100000000
 
 		targetKey := order.TargetChainId + "_" + order.TargetCoinAddress
 		targetStats := statsMap[targetKey]
@@ -178,12 +180,12 @@ func (s *dailyBridgeStats) DailyStats(req *dao.DailyBridgeStatsSearchReq, date t
 			}
 			statsMap[targetKey] = targetStats
 		}
-		targetStats.TransferIn += order.Amount
+		targetStats.TransferIn = (targetStats.TransferIn*100000000 + order.Amount*100000000) / 100000000
 	}
 
 	stats := make([]*model.DailyBridgeStats, 0, len(statsMap))
 	for _, stat := range statsMap {
-		stat.TransferDifference = stat.TransferIn - stat.TransferOut
+		stat.TransferDifference = (stat.TransferIn*100000000 - stat.TransferOut*100000000) / 100000000
 		stat.PlatformAssets = getBalance(stat.ChainId, stat.CoinAddress)
 		stats = append(stats, stat)
 	}
