@@ -105,3 +105,9 @@ npm run build:prod
             demo  123456
 
 赞助会员QQ群：799025128
+
+
+如果只是需要重启容器了直接： sudo docker  start 容器Id
+如果需要重新构建镜像则有两步：
+一构建镜像：docker build -t adminfrontend .
+二启动镜像：sudo docker run -p 9200：9200 adminfrontend
