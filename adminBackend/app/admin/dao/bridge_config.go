@@ -45,8 +45,8 @@ type BridgeConfigAddReq struct {
 	OnceTotal          float64 `p:"onceTotal" v:"required#跨入单次审核数量不能为空"`
 	IsEnable           int     `p:"isEnable" v:"required#状态不能为空"`
 	TargetCoinAddress  string  `p:"targetCoinAddress"`
-	tronNotActiveFee   float64 `p:"tronNotActiveFee"`
-	tronTrc20HaveNoFee float64 `p:"tronTrc20HaveNoFee"`
+	TronNotActiveFee   float64 `p:"tronNotActiveFee"`
+	TronTrc20HaveNoFee float64 `p:"tronTrc20HaveNoFee"`
 }
 
 // BridgeConfigEditReq 修改操作请求参数
