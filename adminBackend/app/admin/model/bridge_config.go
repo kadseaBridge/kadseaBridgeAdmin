@@ -25,6 +25,4 @@ type BridgeConfig struct {
 	TargetCoinAddress  string      `orm:"target_coin_address" json:"targetCoinAddress"` // 目标链合约地址
 	UpdateAt           *gtime.Time `orm:"update_at" json:"updateAt"`                    // 更新时间
 	CreateAt           *gtime.Time `orm:"create_at" json:"createAt"`                    // 创建时间
-	TronNotActiveFee   float64 `orm:"tronNotActiveFee" json:"tronNotActiveFee"`
-	TronTrc20HaveNoFee float64 `orm:"tronTrc20HaveNoFee" json:"tronTrc20HaveNoFee"`
 }
